@@ -1,4 +1,4 @@
-# General purpose JavaScript Deobfuscator
+# General purpose JavaScript deobfuscator
 
 A simple but powerful deobfuscator to remove common JavaScript obfuscation techniques. May host on a website for ease of use in the future.<br/>
 Open an issue if there is a feature you think should be implemented.
@@ -12,6 +12,7 @@ Open an issue if there is a feature you think should be implemented.
 
 
 ## Examples
+More complex example at bottom
 
 ### Array Unpacking
 Before
