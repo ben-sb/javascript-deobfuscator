@@ -6,6 +6,7 @@ import ProxyRemover from './modifications/proxyRemover';
 import ExpressionSimplifier from './modifications/expressionSimplifier';
 import ArrayUnpacker from './modifications/arrayUnpacker';
 import PropertySimplifier from './modifications/propertySimplifier';
+import CleanupHelper from './helpers/cleanupHelper';
 
 const source = fs.readFileSync('input/source.js').toString();
 const $script = refactor(source);
@@ -32,4 +33,5 @@ modifications.push(new PropertySimplifier(propertySimplifierOptions));
 modifications.forEach(m => m.execute($script));
 
 
+CleanupHelper.cleanup($script);
 fs.writeFileSync('output/output.js', beautify($script.codegen().toString()));

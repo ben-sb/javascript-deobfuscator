@@ -1,9 +1,14 @@
 import { RefactorQueryAPI } from "shift-refactor/dist/src/refactor-session-chainable";
 import Modification from "../modification";
 import * as Shift from 'shift-ast';
-import { copyExpression } from "../utils/copyNode";
+import ScopeAnalyzer from "../scope/scopeAnalyzer";
+import Scope from "../scope/scope";
+import Variable, { VariableUse } from "../scope/variable";
+import TraversalHelper from "../helpers/traversalHelper";
 
 export default class ProxyRemover extends Modification {
+    private $script: RefactorQueryAPI | undefined;
+
     /**
      * Creates a new modification.
      * @param options The options map.
@@ -17,54 +22,78 @@ export default class ProxyRemover extends Modification {
      * @param $script The AST.
      */
     execute($script: RefactorQueryAPI) {
-        while (this.removeProxyFunctions($script)) {}
+        this.$script = $script;
+
+        let scope = ScopeAnalyzer.analyze($script.raw());
+        this.removeInScope(scope);
     }
 
     /**
-     * Detects and removes proxy functions, returns whether any replacements were made.
-     * @param $script The AST.
+     * Searches for and removes proxy functions in a given scope.
+     * @param scope The scope.
      */
-    private removeProxyFunctions($script: RefactorQueryAPI): boolean {
-        let proxyFunctions = new Map<string, Shift.Node>();
-        let proxyFunctionExpressions = $script('VariableDeclarator[init.type="FunctionExpression"]')
-            .filter(d => this.isProxyFunction(d.init))
-            .forEach(d => proxyFunctions.set(d.binding.name, d.init));
+    private removeInScope(scope: Scope): void {
+        scope.variables.forEach((v: Variable) => {
+            if (v.declarations.length == 0) {
+                return;
+            }
+            let declaration = v.declarations[0];
 
-        let proxyFunctionDeclarations = $script('FunctionDeclaration')
-            .filter(f => this.isProxyFunction(f))
-            .forEach(f => proxyFunctions.set(f.name.name, f));
+            if (declaration.parentNode.type == 'VariableDeclarator' && declaration.parentNode.init && declaration.parentNode.init.type == 'FunctionExpression') {
+                if (this.isProxyFunction(declaration.parentNode.init as Shift.Node)) {
+                    this.removeProxyFunction(scope, declaration, v.references);
+                }
+            } else if (declaration.node.type == 'FunctionDeclaration' && this.isProxyFunction(declaration.node)) {
+                this.removeProxyFunction(scope, declaration, v.references);
+            }
+        });
 
-        let result = $script('CallExpression[callee.type="IdentifierExpression"]')
-            .filter(c => proxyFunctions.has(c.callee.name))
-            .replace(c => {
-                let call = c as Shift.CallExpression;
-                let func = proxyFunctions.get((call.callee as any).name) as Shift.FunctionDeclaration | Shift.FunctionExpression;
-                let expression = copyExpression((func as any).body.statements[0].expression as Shift.CallExpression | Shift.BinaryExpression) as Shift.Expression;
+        scope.children.forEach(s => this.removeInScope(s));
+    }
+
+    /**
+     * Replaces all references to and removes a  proxy function.
+     * @param scope The scope.
+     * @param declaration The proxy function declaration.
+     * @param references The references to the proxy function.
+     */
+    private removeProxyFunction(scope: Scope, declaration: VariableUse, references: VariableUse[]): void {
+        let func = declaration.node.type == 'FunctionDeclaration'
+            ? declaration.node
+            : (declaration.parentNode as any).init;
+        references.forEach((r: VariableUse) => {
+            if (r.parentNode.type == 'CallExpression') {
+                let call = r.parentNode as Shift.CallExpression;
+                let expression = (func as any).body.statements[0].expression as Shift.Expression;
 
                 if (expression.type == 'CallExpression') {
-                    let callExpression = expression as Shift.CallExpression;
-                    call.arguments.forEach((a, i) => {
+                    let args = call.arguments;
+                    args.forEach((a, i) => {
                         let param = func.params.items[i];
-                        callExpression.arguments.forEach((ar, ind) => {
-                            callExpression.arguments[ind] = this.replaceArgument(ar, (param as Shift.BindingIdentifier).name, a) as any;
+                        args.forEach((ar, ind) => {
+                            args[ind] = this.replaceInArgument(ar, (param as Shift.BindingIdentifier).name, a) as any;
                         })
+                    });
+                    expression = new Shift.CallExpression({
+                        callee: expression.callee,
+                        arguments: args
                     });
                 } else {
                     call.arguments.forEach((a, i) => {
                         let param = func.params.items[i];
-                        expression = this.replaceArgument(expression, (param as any).name, a) as Shift.BinaryExpression;
-                    })
+                        expression = this.replaceInArgument(expression, (param as any).name, a) as Shift.BinaryExpression;
+                    });
                 }
 
-                return expression;
-            });
-        
-        if (result.session.nodes.length == 0) {
-            proxyFunctionExpressions.delete();
-            proxyFunctionDeclarations.delete();
-        }
+                TraversalHelper.replaceNode(scope.node, r.parentNode, expression);
+            }
+        });
 
-        return result.session.nodes.length > 0;
+        if (func.type == 'FunctionExpression') {
+            TraversalHelper.removeNode(scope.node, declaration.parentNode);
+        } else {
+            TraversalHelper.removeNode(scope.node, func);
+        }
     }
 
     /**
@@ -73,7 +102,7 @@ export default class ProxyRemover extends Modification {
      * @param value The identifier name to replace.
      * @param replacement The replacement node
      */
-    private replaceArgument(node: Shift.Node, value: string, replacement: Shift.Node): Shift.Node {
+    private replaceInArgument(node: Shift.Node, value: string, replacement: Shift.Node): Shift.Node {
         switch (node.type) {
             case 'IdentifierExpression':
                 if (node.name == value) {
@@ -83,9 +112,9 @@ export default class ProxyRemover extends Modification {
     
             case 'BinaryExpression':
                 return new Shift.BinaryExpression({
-                    left: this.replaceArgument(node.left, value, replacement) as Shift.Expression,
+                    left: this.replaceInArgument(node.left, value, replacement) as Shift.Expression,
                     operator: node.operator,
-                    right: this.replaceArgument(node.right, value, replacement) as Shift.Expression
+                    right: this.replaceInArgument(node.right, value, replacement) as Shift.Expression
                 });
         }
     
