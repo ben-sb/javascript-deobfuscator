@@ -1,6 +1,6 @@
 # General purpose JavaScript Deobfuscator
 
-A deobfuscator to remove common JavaScript obfuscation techniques.<br/>
+A simple but powerful deobfuscator to remove common JavaScript obfuscation techniques. I may host it on a website in the future.<br/>
 
 ## Features
 * Unpacks arrays containing literals (strings, numbers etc) and replaces all references to them
@@ -24,6 +24,8 @@ After
 ```javascript
 console.log("Hello" + " " + "World");
 ```
+
+<br/>
 
 ### Proxy Functions
 #### An example with simple proxy functions for other functions
@@ -84,6 +86,8 @@ After
 let result = 6 + 2 * 6;
 ```
 
+<br/>
+
 ### Expression Simplification
 #### An example with numbers
 
@@ -115,6 +119,8 @@ After
 ```javascript
 console.log("Hello World");
 ```
+
+<br/>
 
 ### Overall Example
 All these features can be chained together to simplify code.
