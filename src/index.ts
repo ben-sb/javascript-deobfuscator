@@ -13,13 +13,13 @@ const $script = refactor(source);
 
 let modifications: Modification[] = [];
 
-const proxyRemoverOptions = new Map<string, any>();
-modifications.push(new ProxyRemover(proxyRemoverOptions));
+/*const proxyRemoverOptions = new Map<string, any>();
+modifications.push(new ProxyRemover(proxyRemoverOptions));*/
 
 const expressionSimplifierOptions = new Map<string, any>();
 modifications.push(new ExpressionSimplifier(expressionSimplifierOptions));
 
-const arrayUnpackerOptions = new Map<string, any>();
+/*const arrayUnpackerOptions = new Map<string, any>();
 arrayUnpackerOptions.set('Remove Arrays', true);
 modifications.push(new ArrayUnpacker(arrayUnpackerOptions));
 
@@ -27,7 +27,7 @@ modifications.push(new ArrayUnpacker(arrayUnpackerOptions));
 modifications.push(new ExpressionSimplifier(expressionSimplifierOptions));
 
 const propertySimplifierOptions = new Map<string, any>();
-modifications.push(new PropertySimplifier(propertySimplifierOptions));
+modifications.push(new PropertySimplifier(propertySimplifierOptions));*/
 
 modifications.forEach(m => m.execute($script));
 

@@ -1,1 +1,1 @@
-var a = 227;
+console.log("Hello World");
