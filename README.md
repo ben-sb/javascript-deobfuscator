@@ -10,15 +10,17 @@ A deobfuscator to remove common JavaScript obfuscation techniques.<br/>
 * Converts computed to static member expressions and beautifies the code
 
 
+## Examples
+
 ### Array Unpacking
-#### Before
+Before
 ```javascript
 let a = [' ', 'World', 'Hello'];
 
 console.log(a[2] + a[0] + a[1]);
 ```
 
-#### After
+After
 ```javascript
 console.log("Hello" + " " + "World");
 ```
