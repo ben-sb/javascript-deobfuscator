@@ -1,6 +1,7 @@
 # General purpose JavaScript Deobfuscator
 
-A simple but powerful deobfuscator to remove common JavaScript obfuscation techniques. I may host it on a website in the future.<br/>
+A simple but powerful deobfuscator to remove common JavaScript obfuscation techniques. May host on a website for ease of use in the future.<br/>
+Open an issue if there is a feature you think should be implemented.
 
 ## Features
 * Unpacks arrays containing literals (strings, numbers etc) and replaces all references to them
