@@ -150,7 +150,10 @@ console.log(message + result);
 ```
 
 
-
 ## To Run
 Put the obfuscated script in input/source.js and run:<br/>
 **npm start**
+
+
+## Credits
+[jsoverson](https://github.com/jsoverson) for the Shift AST and Shift Refactor
