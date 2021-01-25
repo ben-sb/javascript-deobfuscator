@@ -12,7 +12,7 @@ Open an issue if there is a feature you think should be implemented.
 
 
 ## Examples
-More complex example at bottom
+See bottom for more complicated example with features chained together.
 
 ### Array Unpacking
 Before
