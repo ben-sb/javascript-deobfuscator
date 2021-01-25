@@ -82,7 +82,7 @@ export default class ArrayUnpacker extends Modification {
     private isLiteralArray(node: Shift.Node): boolean {
         let arrayExpression = (node as Shift.VariableDeclarator).init as Shift.ArrayExpression;
         for (let element of arrayExpression.elements) {
-            if (!element?.type.startsWith('Literal')) {
+            if (!element?.type.startsWith('Literal') && element?.type != 'BinaryExpression' && element?.type != 'UnaryExpression') {
                 return false;
             }
         }
