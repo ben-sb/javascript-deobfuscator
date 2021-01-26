@@ -3,7 +3,6 @@
 A simple but powerful deobfuscator to remove common JavaScript obfuscation techniques.
 Open an issue if there is a feature you think should be implemented.
 
-<br/>
 Online version at [deobfuscate.io](https://deobfuscate.io)
 
 ## Features
