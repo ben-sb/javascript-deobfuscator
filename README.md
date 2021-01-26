@@ -4,8 +4,7 @@ A simple but powerful deobfuscator to remove common JavaScript obfuscation techn
 Open an issue if there is a feature you think should be implemented.
 
 <br/>
-<br/>
-Online version at [deobfuscate.io](https://deobfuscate.io)
+Online version at [deobfuscate.io](https://deobfuscate.io/)
 
 ## Features
 * Unpacks arrays containing literals (strings, numbers etc) and replaces all references to them
