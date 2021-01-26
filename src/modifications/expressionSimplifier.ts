@@ -35,8 +35,11 @@ export default class ExpressionSimplifier extends Modification {
                         rightValue = this.getExpressionValue(b.right);
 
                     if (leftValue != null && rightValue != null) {
-                        var value = eval(`${leftValue} ${b.operator} ${rightValue}`);
-                        replaceCount++;
+                        let value;
+                        try {
+                            value = eval(`${leftValue} ${b.operator} ${rightValue}`);
+                        } catch (err) {}
+                        
                         if (value != undefined) {
                             replaceCount++;
                             return typeof value == 'string' ? new Shift.LiteralStringExpression({
