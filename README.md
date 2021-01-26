@@ -5,7 +5,7 @@ Open an issue if there is a feature you think should be implemented.
 
 ## Features
 * Unpacks arrays containing literals (strings, numbers etc) and replaces all references to them
-* Removes simple proxy functions (calls to another function) and arithmetic proxy functions (binary expressions)
+* Removes simple proxy functions (calls to another function), array proxy functions and arithmetic proxy functions (binary expressions)
 * Simplifies arithmetic expressions
 * Simplifies string concatenation
 * Converts computed to static member expressions and beautifies the code

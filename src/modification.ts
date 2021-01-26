@@ -2,16 +2,13 @@ import { RefactorQueryAPI } from "shift-refactor/dist/src/refactor-session-chain
 
 export default abstract class Modification {
     name: string;
-    options: Map<string, any>;
 
     /**
      * Creates a new modification.
      * @param name The name of the modification.
-     * @param options The options map for the modification.
      */
-    constructor(name: string, options: Map<string, any>) {
+    constructor(name: string) {
         this.name = name;
-        this.options = options;
     }
 
     /**
