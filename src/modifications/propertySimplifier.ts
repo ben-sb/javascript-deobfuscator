@@ -5,10 +5,9 @@ import * as Shift from 'shift-ast';
 export default class PropertySimplifier extends Modification {
     /**
      * Creates a new modification.
-     * @param options The options map.
      */
-    constructor(options: Map<string, any>) {
-        super('Simplify Properties', options);
+    constructor() {
+        super('Simplify Properties');
     }
 
     /**

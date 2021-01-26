@@ -7,14 +7,14 @@ import Variable, { VariableUse } from "../scope/variable";
 import TraversalHelper from "../helpers/traversalHelper";
 
 export default class ProxyRemover extends Modification {
-    private $script: RefactorQueryAPI | undefined;
+    removeProxyFunctions: boolean;
 
     /**
      * Creates a new modification.
-     * @param options The options map.
      */
-    constructor(options: Map<string, any>) {
-        super('Remove Proxy Functions', options);
+    constructor(removeProxyFunctions: boolean) {
+        super('Remove Proxy Functions');
+        this.removeProxyFunctions = removeProxyFunctions;
     }
 
     /**
@@ -22,8 +22,6 @@ export default class ProxyRemover extends Modification {
      * @param $script The AST.
      */
     execute($script: RefactorQueryAPI) {
-        this.$script = $script;
-
         let scope = ScopeAnalyzer.analyze($script.raw());
         this.removeInScope(scope);
     }
@@ -89,10 +87,12 @@ export default class ProxyRemover extends Modification {
             }
         });
 
-        if (func.type == 'FunctionExpression') {
-            TraversalHelper.removeNode(scope.node, declaration.parentNode);
-        } else {
-            TraversalHelper.removeNode(scope.node, func);
+        if (this.removeProxyFunctions) {
+            if (func.type == 'FunctionExpression') {
+                TraversalHelper.removeNode(scope.node, declaration.parentNode);
+            } else {
+                TraversalHelper.removeNode(scope.node, func);
+            }
         }
     }
 
@@ -116,6 +116,12 @@ export default class ProxyRemover extends Modification {
                     operator: node.operator,
                     right: this.replaceInArgument(node.right, value, replacement) as Shift.Expression
                 });
+
+            case 'ComputedMemberExpression':
+                return new Shift.ComputedMemberExpression({
+                    object: this.replaceInArgument(node.object, value, replacement) as Shift.Expression,
+                    expression: this.replaceInArgument(node.expression, value, replacement) as Shift.Expression
+                })
         }
     
         return node;
@@ -129,7 +135,7 @@ export default class ProxyRemover extends Modification {
         let func = node as Shift.FunctionDeclaration | Shift.FunctionExpression;
         if (func.body.statements.length == 1 && func.body.statements[0].type == 'ReturnStatement') {
             let type = (func.body.statements[0].expression as any).type;
-            return type == 'CallExpression' || type == 'BinaryExpression';
+            return type == 'CallExpression' || type == 'BinaryExpression' || type == 'ComputedMemberExpression';
         }
         return false;
     }

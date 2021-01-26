@@ -5,10 +5,9 @@ import * as Shift from 'shift-ast';
 export default class ExpressionSimplifier extends Modification {
     /**
      * Creates a new modification.
-     * @param options The options map.
      */
-    constructor(options: Map<string, any>) {
-        super('Simplify Expressions', options);
+    constructor() {
+        super('Simplify Expressions');
     }
 
     /**

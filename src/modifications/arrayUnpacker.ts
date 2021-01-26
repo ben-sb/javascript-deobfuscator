@@ -7,11 +7,10 @@ export default class ArrayUnpacker extends Modification {
 
     /**
      * Creates a new modification.
-     * @param options The options map.
      */
-    constructor(options: Map<string, boolean>) {
-        super('Unpack Arrays', options);
-        this.removeArrays = this.options.get('Remove Arrays') as boolean;
+    constructor(removeArrays: boolean) {
+        super('Unpack Arrays');
+        this.removeArrays = removeArrays;
     }
 
     /**
