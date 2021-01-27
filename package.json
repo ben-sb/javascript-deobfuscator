@@ -12,7 +12,8 @@
     "js-beautify": "^1.13.4",
     "shift-ast": "^6.1.0",
     "shift-refactor": "^2.0.0",
-    "shift-traverser": "^1.0.0"
+    "shift-traverser": "^1.0.0",
+    "shift-validator": "^5.0.1"
   },
   "devDependencies": {
     "@types/node": "^14.14.22",
