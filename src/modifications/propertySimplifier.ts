@@ -1,6 +1,7 @@
 import { RefactorQueryAPI } from "shift-refactor/dist/src/refactor-session-chainable";
 import Modification from "../modification";
 import * as Shift from 'shift-ast';
+import isValid from 'shift-validator';
 
 export default class PropertySimplifier extends Modification {
     /**
@@ -24,10 +25,11 @@ export default class PropertySimplifier extends Modification {
      */
     private simplifyProperties($script: RefactorQueryAPI): void {
         $script.replaceChildren('*[object.type=/.*Expression/][expression.type="LiteralStringExpression"]', c => {
-            return new Shift.StaticMemberExpression({
+            let node = new Shift.StaticMemberExpression({
                 object: (c as any).object,
                 property: (c as any).expression.value
-            })
+            });
+            return isValid(node) ? node : c;
         });
     }
 }
