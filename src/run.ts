@@ -1,4 +1,4 @@
-import {deobfuscate} from ".";
+import { deobfuscate } from "./index";
 import fs from 'fs';
 
 const source = fs.readFileSync('input/source.js').toString();

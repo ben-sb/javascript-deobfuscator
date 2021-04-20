@@ -10,26 +10,22 @@ export default class TraversalHelper {
      * @param replacement The replacement node.
      */
     static replaceNode(root: Shift.Node, node: Shift.Node, replacement: Shift.Node | null): void {
-        let replaced = false;
-
         traverse(root, {
             enter(n: Shift.Node, parent: Shift.Node) {
                 if (n == node) {
-                    for (let prop of Object.getOwnPropertyNames(parent)) {
-                        let value = (parent as any)[prop];
+                    for (const prop of Object.getOwnPropertyNames(parent)) {
+                        const value = (parent as any)[prop];
                         if (value == n) {
                             (parent as any)[prop] = replacement;
-                            replaced = true;
                         } else if (Array.isArray(value)) {
-                            let array = value as Array<any>;
-                            let index = array.indexOf(node);
+                            const array = value as Array<any>;
+                            const index = array.indexOf(node);
                             if (index != -1) {
                                 if (replacement) {
-                                array[index] = replacement;
+                                    array[index] = replacement;
                                 } else {
                                     array.splice(index, 1);
                                 }
-                                replaced = true;
                             }
                         }
                     }

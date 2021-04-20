@@ -9,9 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "js-beautify": "^1.13.4",
     "shift-ast": "^6.1.0",
-    "shift-refactor": "^2.0.0",
+    "shift-codegen": "^7.0.3",
+    "shift-parser": "^7.0.3",
     "shift-traverser": "^1.0.0",
     "shift-validator": "^5.0.1"
   },
