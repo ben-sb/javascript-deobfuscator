@@ -1,5 +1,3 @@
-let total = 0;
-for (let i = 0; i < 10; i++) {
-    total += i;
-}
-console.log("Total: " + total);
+let message = "Hello World";
+let result = 40106;
+console.log(message + result);

@@ -1,48 +1,45 @@
-import {refactor} from 'shift-refactor';
-import {js as beautify} from 'js-beautify';
+import parseScript from 'shift-parser';
+import * as Shift from 'shift-ast';
+import codegen, { FormattedCodeGen } from 'shift-codegen';
 import Modification from './modification';
-import ProxyRemover from './modifications/proxyRemover';
-import ExpressionSimplifier from './modifications/expressionSimplifier';
-import ArrayUnpacker from './modifications/arrayUnpacker';
-import PropertySimplifier from './modifications/propertySimplifier';
+import ProxyRemover from './modifications/proxies/proxyRemover';
+import ExpressionSimplifier from './modifications/expressions/expressionSimplifier';
+import ArrayUnpacker from './modifications/arrays/arrayUnpacker';
+import PropertySimplifier from './modifications/properties/propertySimplifier';
 import CleanupHelper from './helpers/cleanupHelper';
 import Config from './config';
 
 export function deobfuscate(source: string, config: Config): string {
-    const $script = refactor(source);
-
-    let modifications: Modification[] = [];
+    const ast = parseScript(source) as Shift.Script;
+    const modifications: Modification[] = [];
 
     if (config.proxyFunctions.replaceProxyFunctions) {
-        modifications.push(new ProxyRemover(config.proxyFunctions.removeProxyFunctions));
+        modifications.push(new ProxyRemover(ast, config.proxyFunctions.removeProxyFunctions));
     }
 
     if (config.expressions.simplifyExpressions) {
-        modifications.push(new ExpressionSimplifier());
+        modifications.push(new ExpressionSimplifier(ast));
     }
 
     if (config.arrays.unpackArrays) {
-        modifications.push(new ArrayUnpacker(config.arrays.removeArrays));
+        modifications.push(new ArrayUnpacker(ast, config.arrays.removeArrays));
     }
 
     // simplify any expressions that were revealed by the array unpacking
     if (config.expressions.simplifyExpressions) {
-        modifications.push(new ExpressionSimplifier());
+        modifications.push(new ExpressionSimplifier(ast));
     }
 
     if (config.miscellaneous.simplifyProperties) {
-        modifications.push(new PropertySimplifier());
+        modifications.push(new PropertySimplifier(ast));
     }
 
-    modifications.forEach(m => m.execute($script));
+    modifications.forEach(m => m.execute());
 
-
-    CleanupHelper.cleanup($script);
-    let output = $script.codegen().toString();
-    
-    if (config.miscellaneous.beautify) {
-        output = beautify(output);
-    }
+    CleanupHelper.cleanup(ast);
+    const output = config.miscellaneous.beautify
+        ? codegen(ast, new FormattedCodeGen())
+        : codegen(ast);
 
     return output;
 }

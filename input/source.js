@@ -1,11 +1,11 @@
-// Example code
-let _0x38a2db = ['\x54\x6f\x74\x61\x6c', '\x6c\x6f\x67', '\x3a\x20'];
-function _0x9b58d9(_0x39ddb7) {
-	return _0x38a2db[_0x39ddb7 + (-0x6d5 + 0x58 + 0x11 * 0x62)];
-}
-
-let total = 0x2 * 0x109e + -0xc * -0x16a + -0x3234;
-for (let i = 0x1196 + 0x97b * 0x3 + -0x2e07; i < -0x95 * -0x38 + -0x1a75 + -0x619; i++) {
-	total += i;
-}
-console[_0x9b58d9(-(0x1e7c + -0x1 * -0x1367 + 0x2ef * -0x11))](_0x9b58d9(-(0x1020 + 0x253 + 0x7 * -0x2a2)) + _0x9b58d9(-(0x12c5 + -0x1887 + -0x1 * -0x5c5)) + total);
+let ar = ['\x48\x65\x6c\x6c\x6f', 0x95, '\x20', 0x1a75, '\x57\x6f\x72\x6c\x64', -0x53, '\x6c\x6f\x67']
+let a = function(b, c) {
+    return c + 2 * b;
+}, b = function(c, d) {
+    return a(c, d);
+}, c = function(d, e) {
+    return b(d, e);
+};
+let message = ar[0] + ar[2] + ar[4];
+let result = c(ar[1] * 0x38 + ar[3] + 0x619, 0x12 * ar[5] + 0x1a13 + 0x621);
+console[ar[6]](message + result);
