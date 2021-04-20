@@ -31,6 +31,7 @@ export default class ExpressionSimplifier extends Modification {
             enter(node: Shift.Node, parent: Shift.Node) {
                 if (self.types.includes(node.type)) {
                     const replacement = self.simplifyExpression(node as Shift.Expression);
+
                     if (replacement != node) {
                         TraversalHelper.replaceNode(parent, node, replacement);
                     }
@@ -83,7 +84,9 @@ export default class ExpressionSimplifier extends Modification {
      * @param expression The unary expression node.
      */
     private simplifyUnaryExpression(expression: Shift.UnaryExpression): Shift.Expression {
+        expression.operand = this.simplifyExpression(expression.operand);
         const code = this.getExpressionValueAsString(expression);
+
         if (code != null) {
             const simplified = this.evalCodeToExpression(code);
             return simplified != null
