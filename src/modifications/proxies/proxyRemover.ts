@@ -83,7 +83,7 @@ export default class ProxyRemover extends Modification {
         traverse(node, {
             enter(node: Shift.Node, parent: Shift.Node) {
                 if (self.scopeTypes.includes(node.type)) {
-                    scope = new Scope(node, scope);
+                    scope = scope.children.get(node) as Scope;
                 }
                 else if (self.isFunctionCall(node)) {
                     const name = (node as any).callee.name;
