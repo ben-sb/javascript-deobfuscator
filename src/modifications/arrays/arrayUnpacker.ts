@@ -6,7 +6,7 @@ import Scope from "./scope";
 import TraversalHelper from "../../helpers/traversalHelper";
 
 export default class ArrayUnpacker extends Modification {
-    private readonly scopeTypes = ['Block', 'FunctionBody'];
+    private readonly scopeTypes = new Set(['Block', 'FunctionBody']);
     private shouldRemoveArrays: boolean;
     private globalScope: Scope;
 
@@ -42,7 +42,7 @@ export default class ArrayUnpacker extends Modification {
 
         traverse(this.ast, {
             enter(node: Shift.Node, parent: Shift.Node) {
-                if (self.scopeTypes.includes(node.type)) {
+                if (self.scopeTypes.has(node.type)) {
                     scope = new Scope(node, scope);
                 }
                 else if (self.isLiteralArrayDeclaration(node)) {
@@ -70,7 +70,7 @@ export default class ArrayUnpacker extends Modification {
 
         traverse(this.ast, {
             enter(node: Shift.Node, parent: Shift.Node) {
-                if (self.scopeTypes.includes(node.type)) {
+                if (self.scopeTypes.has(node.type)) {
                     scope = scope.children.get(node) as Scope;
                 }
                 else if (self.isSimpleArrayAccess(node)) {

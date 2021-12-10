@@ -6,8 +6,8 @@ import Scope from "./scope";
 import ProxyFunction from "./proxyFunction";
 
 export default class ProxyRemover extends Modification {
-    private readonly scopeTypes = ['Block', 'FunctionBody'];
-    private readonly proxyExpressionTypes = ['CallExpression', 'BinaryExpression', 'ComputedMemberExpression'];
+    private readonly scopeTypes = new Set(['Block', 'FunctionBody']);
+    private readonly proxyExpressionTypes = new Set(['CallExpression', 'BinaryExpression', 'ComputedMemberExpression']);
     private shouldRemoveProxyFunctions: boolean;
     private globalScope: Scope;
 
@@ -43,7 +43,7 @@ export default class ProxyRemover extends Modification {
 
         traverse(this.ast, {
             enter(node: Shift.Node, parent: Shift.Node) {
-                if (self.scopeTypes.includes(node.type)) {
+                if (self.scopeTypes.has(node.type)) {
                     scope = new Scope(node, scope);
                 }
                 else if (self.isProxyFunctionDeclaration(node)) {
@@ -82,8 +82,12 @@ export default class ProxyRemover extends Modification {
 
         traverse(node, {
             enter(node: Shift.Node, parent: Shift.Node) {
-                if (self.scopeTypes.includes(node.type)) {
-                    scope = scope.children.get(node) as Scope;
+                if (self.scopeTypes.has(node.type)) {
+                    const sc = scope.children.get(node);
+                    if (!sc) {
+                        throw new Error(`Failed to find scope for node ${node.type}`);
+                    }
+                    scope = sc;
                 }
                 else if (self.isFunctionCall(node)) {
                     const name = (node as any).callee.name;
@@ -131,9 +135,22 @@ export default class ProxyRemover extends Modification {
      * @param node The AST node.
      */
     private isProxyFunctionDeclaration(node: Shift.Node): boolean {
-        return node.type == 'FunctionDeclaration' && node.body.statements.length == 1
+        if (node.type == 'FunctionDeclaration' && node.body.statements.length == 1
             && node.body.statements[0].type == 'ReturnStatement' && node.body.statements[0].expression != null 
-            && this.proxyExpressionTypes.includes(node.body.statements[0].expression.type) && node.params.items.find(p => p.type != 'BindingIdentifier') == undefined;
+            && this.proxyExpressionTypes.has(node.body.statements[0].expression.type) && node.params.items.find(p => p.type != 'BindingIdentifier') == undefined) {
+                const self = this;
+                let hasScopeNode = false;
+                traverse(node.body.statements[0].expression, {
+                    enter(node: Shift.Node) {
+                        if (self.scopeTypes.has(node.type)) {
+                            hasScopeNode = true;
+                        }
+                    }
+                });
+                return !hasScopeNode;
+            } else {
+                return false;
+            }
     }
 
     /**
@@ -142,10 +159,23 @@ export default class ProxyRemover extends Modification {
      * @param node The AST node.
      */
     private isProxyFunctionExpressionDeclaration(node: Shift.Node): boolean {
-        return node.type == 'VariableDeclarator' && node.binding.type == 'BindingIdentifier'
+        if (node.type == 'VariableDeclarator' && node.binding.type == 'BindingIdentifier'
             && node.init != null && node.init.type == 'FunctionExpression'
             && node.init.body.statements.length == 1 && node.init.body.statements[0].type == 'ReturnStatement'
-            && node.init.body.statements[0].expression != null && this.proxyExpressionTypes.includes(node.init.body.statements[0].expression.type);
+            && node.init.body.statements[0].expression != null && this.proxyExpressionTypes.has(node.init.body.statements[0].expression.type)) {
+                const self = this;
+                let hasScopeNode = false;
+                traverse(node.init.body.statements[0].expression, {
+                    enter(node: Shift.Node) {
+                        if (self.scopeTypes.has(node.type)) {
+                            hasScopeNode = true;
+                        }
+                    }
+                });
+                return !hasScopeNode;
+            } else {
+                return false;
+            }
     }
 
     /**
