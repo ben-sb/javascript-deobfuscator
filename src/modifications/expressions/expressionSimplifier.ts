@@ -4,7 +4,7 @@ import { traverse } from 'shift-traverser';
 import TraversalHelper from "../../helpers/traversalHelper";
 
 export default class ExpressionSimplifier extends Modification {
-    private readonly types = ['BinaryExpression', 'UnaryExpression'];
+    private readonly types = new Set(['BinaryExpression', 'UnaryExpression']);
     
     /**
      * Creates a new modification.
@@ -29,7 +29,7 @@ export default class ExpressionSimplifier extends Modification {
 
         traverse(this.ast, {
             enter(node: Shift.Node, parent: Shift.Node) {
-                if (self.types.includes(node.type)) {
+                if (self.types.has(node.type)) {
                     const replacement = self.simplifyExpression(node as Shift.Expression);
 
                     if (replacement != node) {
