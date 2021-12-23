@@ -32,14 +32,18 @@ export default class ProxyFunction {
      * @param args The arguments of the proxy function call.
      */
     getReplacement(args: Shift.Expression[]): Shift.Expression {
-        const expression = this.duplicateExpression(this.expression);
+        let expression = this.duplicateExpression(this.expression);
         const paramUsages = this.findParameterUsages(expression);
 
         for (const [index, usages] of paramUsages) {
             const arg = args[index];
             if (arg) {
                 for (const usage of usages) {
-                    TraversalHelper.replaceNode(usage.parentNode, usage.node, arg);
+                    if (!usage.parentNode) {
+                        expression = arg;
+                    } else {
+                        TraversalHelper.replaceNode(usage.parentNode, usage.node, arg);
+                    }
                 }
             }
         }
