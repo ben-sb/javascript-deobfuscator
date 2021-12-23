@@ -7,7 +7,7 @@ import ProxyFunction from "./proxyFunction";
 
 export default class ProxyRemover extends Modification {
     private readonly scopeTypes = new Set(['Block', 'FunctionBody']);
-    private readonly proxyExpressionTypes = new Set(['CallExpression', 'BinaryExpression', 'ComputedMemberExpression']);
+    private readonly proxyExpressionTypes = new Set(['CallExpression', 'BinaryExpression', 'ComputedMemberExpression', 'IdentifierExpression']);
     private shouldRemoveProxyFunctions: boolean;
     private globalScope: Scope;
 
