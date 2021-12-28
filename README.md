@@ -203,7 +203,6 @@ A few important points about function evaluation:
 ## To Run
 Put the obfuscated script in input/source.js and run:<br/>
 **npm start**
-
 <br/>
 
 Or use the online version [deobfuscate.io](https://deobfuscate.io)
