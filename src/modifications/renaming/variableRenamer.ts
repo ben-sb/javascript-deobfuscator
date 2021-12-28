@@ -152,7 +152,8 @@ export default class VariableRenamer extends Modification {
                         break;
                     }
 
-                    case 'IdentifierExpression': {
+                    case 'IdentifierExpression': 
+                    case 'AssignmentTargetIdentifier': {
                         let variable = scope.lookupVariable(node.name);
 
                         // handle global variables
