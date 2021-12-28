@@ -8,6 +8,7 @@ import ArrayUnpacker from './modifications/arrays/arrayUnpacker';
 import PropertySimplifier from './modifications/properties/propertySimplifier';
 import CleanupHelper from './helpers/cleanupHelper';
 import Config from './config';
+import VariableRenamer from './modifications/renaming/variableRenamer';
 
 export function deobfuscate(source: string, config: Config): string {
     const ast = parseScript(source) as Shift.Script;
@@ -32,6 +33,10 @@ export function deobfuscate(source: string, config: Config): string {
 
     if (config.miscellaneous.simplifyProperties) {
         modifications.push(new PropertySimplifier(ast));
+    }
+
+    if (config.miscellaneous.renameHexIdentifiers) {
+        modifications.push(new VariableRenamer(ast));
     }
 
     modifications.forEach(m => m.execute());
