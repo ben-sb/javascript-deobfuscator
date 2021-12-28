@@ -4,7 +4,7 @@ export class Variable {
     name: string;
     type: VariableType;
     declarations: Shift.BindingIdentifier[];
-    references: Shift.IdentifierExpression[];
+    references: (Shift.IdentifierExpression | Shift.AssignmentTargetIdentifier)[];
 
     /**
      * Creates a new variable.
