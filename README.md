@@ -195,7 +195,7 @@ console.log(a);
 ```
 
 A few important points about function evaluation:
-* This feature is still somewhat experimental, it's probably easier to use via the CLI as it's near impossible to find errors using the online version.
+* This feature is still somewhat experimental, it's probably easier to use via the CLI as it's easier to find errors than the online version.
 * If the function is not a function declaration (i.e. a function expression or an arrow function expression) then the deobfuscator will not be able to detect the name of it automatically. To provide it use "#execute[name=FUNC_NAME]" directive.
 * You may need to modify the function to ensure it relies on no external variables (i.e. move a string array declaration inside the function) and handle any extra logic like string array rotation first.
 * You must first remove any anti tampering mechanisms before using function evaluation, otherwise it may cause an infinite loop.
