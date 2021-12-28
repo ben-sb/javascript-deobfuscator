@@ -16,7 +16,8 @@ const config = {
     },
     miscellaneous: {
         beautify: true,
-        simplifyProperties: true
+        simplifyProperties: true,
+        renameHexIdentifiers: true
     }
 };
 

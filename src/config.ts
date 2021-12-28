@@ -22,4 +22,5 @@ interface ExpressionsConfig {
 interface MiscellaneousConfig {
     beautify: boolean;
     simplifyProperties: boolean;
+    renameHexIdentifiers: boolean;
 }
