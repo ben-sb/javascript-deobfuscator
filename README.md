@@ -10,7 +10,9 @@ Online version at [deobfuscate.io](https://deobfuscate.io)
 * Removes simple proxy functions (calls to another function), array proxy functions and arithmetic proxy functions (binary expressions)
 * Simplifies arithmetic expressions
 * Simplifies string concatenation
+* Renames unreadable hexadecimal identifiers (e.g. _0xca830a)
 * Converts computed to static member expressions and beautifies the code
+* *Experimental* function evaluation
 
 
 ## Examples
