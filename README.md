@@ -205,8 +205,4 @@ Put the obfuscated script in input/source.js and run:<br/>
 **npm start**
 <br/>
 
-Or use the online version [deobfuscate.io](https://deobfuscate.io)
-
-
-## Credits
-[jsoverson](https://github.com/jsoverson) for Shift AST and Shift Refactor
+Or use the online version at [deobfuscate.io](https://deobfuscate.io)
