@@ -1,5 +1,6 @@
 import Modification from "../../modification";
 import * as Shift from 'shift-ast';
+import fs from 'fs';
 import { Scope, ScopeType } from "./scope";
 import { traverse } from 'shift-traverser';
 import { blockScopedTypes, Variable } from "./variable";
@@ -194,37 +195,18 @@ export default class VariableRenamer extends Modification {
     }
 
     /**
-     * Generates a list of unique ordered variable names.
+     * Generates a list of unique variable names.
      */
     private generateNames(): void {
-        const names = [];
-        const chars = this.ALPHABET.split('');
-
-        for (const char of chars) {
-            if (!this.usedVariableNames.has(char)) {
-                names.push(char);
+        const names = fs.readFileSync('names.txt').toString().split('\n');
+        const variableNames = names.reduce((arr, name) => {
+            if (!this.usedVariableNames.has(name)) {
+                arr.push(name);
             }
-        }
-        for (const c1 of chars) {
-            for (const c2 of chars) {
-                const name = c1 + c2;
-                if (!this.usedVariableNames.has(name)) {
-                    names.push(name);
-                }
-            }
-        }
-        for (const c1 of chars) {
-            for (const c2 of chars) {
-                for (const c3 of chars) {
-                    const name = c1 + c2 + c3;
-                    if (!this.usedVariableNames.has(name)) {
-                        names.push(name);
-                    }
-                }
-            }
-        }
-
-        this.variableNames = names;
+            return arr;
+        }, [] as string[]);
+        
+        this.variableNames = variableNames;
     }
 
     /**
