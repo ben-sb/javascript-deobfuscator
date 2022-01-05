@@ -1,9 +1,9 @@
 import Modification from "../../modification";
 import * as Shift from 'shift-ast';
-import fs from 'fs';
 import { Scope, ScopeType } from "./scope";
 import { traverse } from 'shift-traverser';
 import { blockScopedTypes, Variable } from "./variable";
+import names from './names.json';
 
 export default class VariableRenamer extends Modification {
     private readonly ALPHABET = 'abcdefghijklmnopqrstuvwxyz';
@@ -198,7 +198,6 @@ export default class VariableRenamer extends Modification {
      * Generates a list of unique variable names.
      */
     private generateNames(): void {
-        const names = fs.readFileSync('names.txt').toString().split('\n');
         const variableNames = names.reduce((arr, name) => {
             if (!this.usedVariableNames.has(name)) {
                 arr.push(name);
