@@ -27,6 +27,7 @@ export default class ProxyRemover extends Modification {
      */
     execute(): void {
         this.findProxyFunctions();
+        this.findAliases();
         this.replaceProxyFunctionUsages(this.ast, this.globalScope);
         
         if (this.shouldRemoveProxyFunctions) {
@@ -61,6 +62,37 @@ export default class ProxyRemover extends Modification {
 
                     const proxyFunction = new ProxyFunction(node, parent, name, params, expression);
                     scope.addProxyFunction(proxyFunction);
+                }
+            },
+            leave(node: Shift.Node) {
+                if (node == scope.node && scope.parent) {
+                    scope = scope.parent;
+                }
+            }
+        });
+    }
+
+    /**
+     * Finds aliases for proxy functions.
+     */
+    private findAliases(): void {
+        const self = this;
+        let scope = this.globalScope;
+
+        traverse(this.ast, {
+            enter(node: Shift.Node, parent: Shift.Node) {
+                if (self.scopeTypes.has(node.type)) {
+                    scope = scope.children.get(node) as Scope;
+                }
+                if (self.isVariableReassignment(node)) {
+                    const name = (node as any).init.name;
+                    const newName = (node as any).binding.name;
+
+                    const proxyFunction = scope.findProxyFunction(name);
+                    if (proxyFunction) {
+                        scope.addAlias(proxyFunction, newName);
+                        TraversalHelper.removeNode(parent, node);
+                    }
                 }
             },
             leave(node: Shift.Node) {
@@ -176,6 +208,16 @@ export default class ProxyRemover extends Modification {
             } else {
                 return false;
             }
+    }
+
+    /**
+     * Returns whether a node is a variable reassignment.
+     * @param node The AST node.
+     * @returns Whether.
+     */
+    private isVariableReassignment(node: Shift.Node): boolean {
+        return node.type == 'VariableDeclarator' && node.binding.type == 'BindingIdentifier'
+            && node.init != null && node.init.type == 'IdentifierExpression';
     }
 
     /**
