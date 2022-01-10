@@ -198,7 +198,7 @@ export default class VariableRenamer extends Modification {
      * Generates a list of unique variable names.
      */
     private generateNames(): void {
-        const variableNames = names.reduce((arr, name) => {
+        const variableNames = this.shuffleArray(names).reduce((arr, name) => {
             if (!this.usedVariableNames.has(name)) {
                 arr.push(name);
             }
@@ -207,6 +207,23 @@ export default class VariableRenamer extends Modification {
         
         this.variableNames = variableNames;
     }
+
+    /**
+     * Randomly shuffles an array.
+     * @param array The array to be shuffled.
+     * @returns The shuffled array.
+     */
+    private shuffleArray<T>(array: T[]): T[] {
+        for (let i=array.length - 1; i>0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+
+        return array;
+    }
+
 
     /**
      * Returns the next unique variable name.
