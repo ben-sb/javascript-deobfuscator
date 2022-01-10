@@ -43,7 +43,10 @@ export function deobfuscate(source: string, config: Config): string {
         modifications.push(new VariableRenamer(ast));
     }
 
-    modifications.forEach(m => m.execute());
+    for (const modification of modifications) {
+        console.log(`[${(new Date()).toISOString()}]: Executing ${modification.constructor.name}`);
+        modification.execute();
+    }
 
     CleanupHelper.cleanup(ast);
     const output = config.miscellaneous.beautify

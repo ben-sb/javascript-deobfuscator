@@ -1,7 +1,7 @@
 import * as Shift from 'shift-ast';
 import parseScript from 'shift-parser';
 import codegen from 'shift-codegen';
-import { traverse } from 'shift-traverser';
+import { traverse } from '../../helpers/traverse';
 import TraversalHelper from '../../helpers/traversalHelper';
 
 export default class ProxyFunction {

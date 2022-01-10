@@ -1,4 +1,4 @@
-import { traverse } from 'shift-traverser';
+import { traverse } from './traverse';
 import * as Shift from 'shift-ast';
 
 export default class TraversalHelper {

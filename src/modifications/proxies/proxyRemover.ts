@@ -1,6 +1,6 @@
 import Modification from "../../modification";
 import * as Shift from 'shift-ast';
-import { traverse } from 'shift-traverser';
+import { traverse } from '../../helpers/traverse';
 import TraversalHelper from "../../helpers/traversalHelper";
 import Scope from "./scope";
 import ProxyFunction from "./proxyFunction";
