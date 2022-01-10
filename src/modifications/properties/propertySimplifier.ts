@@ -1,7 +1,7 @@
 import Modification from "../../modification";
 import * as Shift from 'shift-ast';
 import isValid from 'shift-validator';
-import { traverse } from 'shift-traverser';
+import { traverse } from '../../helpers/traverse';
 import TraversalHelper from "../../helpers/traversalHelper";
 
 export default class PropertySimplifier extends Modification {

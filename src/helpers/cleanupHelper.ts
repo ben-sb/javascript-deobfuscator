@@ -1,5 +1,5 @@
 import * as Shift from 'shift-ast';
-import { traverse } from 'shift-traverser';
+import { traverse } from './traverse';
 import TraversalHelper from './traversalHelper';
 
 export default class CleanupHelper {

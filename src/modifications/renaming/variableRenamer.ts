@@ -1,7 +1,7 @@
 import Modification from "../../modification";
 import * as Shift from 'shift-ast';
 import { Scope, ScopeType } from "./scope";
-import { traverse } from 'shift-traverser';
+import { traverse } from '../../helpers/traverse';
 import { blockScopedTypes, Variable } from "./variable";
 import names from './names.json';
 
