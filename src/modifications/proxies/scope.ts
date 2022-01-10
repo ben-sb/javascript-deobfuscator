@@ -44,4 +44,13 @@ export default class Scope {
     addProxyFunction(proxyFunction: ProxyFunction): void {
         this.proxyFunctions.set(proxyFunction.name, proxyFunction);
     }
+
+    /**
+     * Adds an alias for a proxy function.
+     * @param func The proxy function.
+     * @param name The alias.
+     */
+    addAlias(func: ProxyFunction, name: string): void {
+        this.proxyFunctions.set(name, func);
+    }
 }
