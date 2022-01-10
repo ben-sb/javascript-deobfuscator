@@ -104,7 +104,7 @@ export default class ExpressionSimplifier extends Modification {
     private getExpressionValueAsString(expression: Shift.Expression): string | null {
         switch (expression.type) {
             case 'LiteralStringExpression':
-                return `"${expression.value}"`;
+                return `"${expression.value.replace(/"/g, '\\"')}"`;
 
             case 'LiteralNumericExpression':
                 return expression.value.toString();
