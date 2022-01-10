@@ -41,7 +41,7 @@ export default class FunctionExecutor extends Modification {
 
         traverse(this.ast, {
             enter(node: Shift.Node, parent: Shift.Node) {
-                if (self.functionTypes.has(node.type)) {
+                if (self.functionTypes.has(node.type) && (node as any).body.directives) {
                     const directive = (node as any).body.directives.find((d: Shift.Directive) => d.rawValue.startsWith('#execute'));
                     if (directive) {
                         let name: string | undefined;
