@@ -10,6 +10,7 @@ import CleanupHelper from './helpers/cleanupHelper';
 import Config from './config';
 import VariableRenamer from './modifications/renaming/variableRenamer';
 import FunctionExecutor from './modifications/execution/functionExecutor';
+import DeadBranchRemover from './modifications/branches/deadBranchRemover';
 
 export function deobfuscate(source: string, config: Config): string {
     const ast = parseScript(source) as Shift.Script;
@@ -33,6 +34,10 @@ export function deobfuscate(source: string, config: Config): string {
     // simplify any expressions that were revealed by the array unpacking
     if (config.expressions.simplifyExpressions) {
         modifications.push(new ExpressionSimplifier(ast));
+    }
+
+    if (config.expressions.removeDeadBranches) {
+        modifications.push(new DeadBranchRemover(ast));
     }
 
     if (config.miscellaneous.simplifyProperties) {

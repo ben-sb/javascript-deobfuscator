@@ -12,7 +12,8 @@ const config = {
         removeProxyFunctions: true
     },
     expressions: {
-        simplifyExpressions: true
+        simplifyExpressions: true,
+        removeDeadBranches: true
     },
     miscellaneous: {
         beautify: true,

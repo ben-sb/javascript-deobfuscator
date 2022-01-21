@@ -17,6 +17,7 @@ interface ProxyFunctionsConfig {
 
 interface ExpressionsConfig {
     simplifyExpressions: boolean;
+    removeDeadBranches: boolean;
 }
 
 interface MiscellaneousConfig {
