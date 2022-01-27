@@ -83,7 +83,7 @@ export default class VariableRenamer extends Modification {
 
                     case 'CatchClause': {
                         if (node.binding && node.binding.type == 'BindingIdentifier') {
-                            const variable = new Variable(node.binding.name, 'let');
+                            const variable = new Variable(node.binding.name, 'var');
                             variable.declarations.push(node.binding);
                             scope.addVariable(variable);
                             self.addName(node.binding.name);
