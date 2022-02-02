@@ -90,6 +90,9 @@ export default class VariableRenamer extends Modification {
                         }
                     }
                     case 'ForStatement':
+                    case 'ForInStatement':
+                    case 'ForOfStatement':
+                    case 'ForAwaitStatement':
                     case 'BlockStatement': {
                         scope = new Scope(node, ScopeType.Other, scope);
                         break;
@@ -144,6 +147,9 @@ export default class VariableRenamer extends Modification {
                     case 'ArrowExpression':
                     case 'CatchClause':
                     case 'ForStatement':
+                    case 'ForInStatement':
+                    case 'ForOfStatement':
+                    case 'ForAwaitStatement':
                     case 'BlockStatement': {
                         const newScope = scope.children.find(s => s.node == node);
                         if (!newScope) {
