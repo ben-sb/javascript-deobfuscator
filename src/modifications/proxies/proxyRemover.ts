@@ -10,6 +10,7 @@ export default class ProxyRemover extends Modification {
     private readonly proxyExpressionTypes = new Set(['CallExpression', 'BinaryExpression', 'ComputedMemberExpression', 'IdentifierExpression']);
     private shouldRemoveProxyFunctions: boolean;
     private globalScope: Scope;
+    private proxyFunctionNames: Set<string>;
 
     /**
      * Creates a new modification.
@@ -20,6 +21,7 @@ export default class ProxyRemover extends Modification {
         super('Remove Proxy Functions', ast);
         this.shouldRemoveProxyFunctions = removeProxyFunctions;
         this.globalScope = new Scope(this.ast);
+        this.proxyFunctionNames = new Set<string>();
     }
 
     /**
@@ -54,6 +56,9 @@ export default class ProxyRemover extends Modification {
 
                     const proxyFunction = new ProxyFunction(node, parent, name, params, expression);
                     scope.addProxyFunction(proxyFunction);
+                    if (!self.proxyFunctionNames.has(name)) {
+                        self.proxyFunctionNames.add(name);
+                    }
                 }
                 else if (self.isProxyFunctionExpressionDeclaration(node)) {
                     const name = (node as any).binding.name;
@@ -62,6 +67,9 @@ export default class ProxyRemover extends Modification {
 
                     const proxyFunction = new ProxyFunction(node, parent, name, params, expression);
                     scope.addProxyFunction(proxyFunction);
+                    if (!self.proxyFunctionNames.has(name)) {
+                        self.proxyFunctionNames.add(name);
+                    }
                 }
             },
             leave(node: Shift.Node) {
@@ -86,12 +94,17 @@ export default class ProxyRemover extends Modification {
                 }
                 if (self.isVariableReassignment(node)) {
                     const name = (node as any).init.name;
-                    const newName = (node as any).binding.name;
+                    if (self.proxyFunctionNames.has(name)) {
+                        const newName = (node as any).binding.name;
 
-                    const proxyFunction = scope.findProxyFunction(name);
-                    if (proxyFunction) {
-                        scope.addAlias(proxyFunction, newName);
-                        TraversalHelper.removeNode(parent, node);
+                        const proxyFunction = scope.findProxyFunction(name);
+                        if (proxyFunction) {
+                            scope.addAlias(proxyFunction, newName);
+                            TraversalHelper.removeNode(parent, node);
+                            if (!self.proxyFunctionNames.has(newName)) {
+                                self.proxyFunctionNames.add(newName);
+                            }
+                        }
                     }
                 }
             },
@@ -123,17 +136,19 @@ export default class ProxyRemover extends Modification {
                 }
                 else if (self.isFunctionCall(node)) {
                     const name = (node as any).callee.name;
-                    const proxyFunction = scope.findProxyFunction(name);
+                    if (self.proxyFunctionNames.has(name)) {
+                        const proxyFunction = scope.findProxyFunction(name);
 
-                    if (proxyFunction) {
-                        const args = (node as any).arguments;
-                        let replacement: Shift.Node = proxyFunction.getReplacement(args);
-                        replacement = self.replaceProxyFunctionUsages(replacement, scope);
+                        if (proxyFunction) {
+                            const args = (node as any).arguments;
+                            let replacement: Shift.Node = proxyFunction.getReplacement(args);
+                            replacement = self.replaceProxyFunctionUsages(replacement, scope);
 
-                        if (parent) {
-                            TraversalHelper.replaceNode(parent, node, replacement);
-                        } else {
-                            replacedNode = replacement;
+                            if (parent) {
+                                TraversalHelper.replaceNode(parent, node, replacement);
+                            } else {
+                                replacedNode = replacement;
+                            }
                         }
                     }
                 }
