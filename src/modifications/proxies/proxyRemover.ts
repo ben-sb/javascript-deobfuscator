@@ -4,13 +4,19 @@ import { traverse } from '../../helpers/traverse';
 import TraversalHelper from "../../helpers/traversalHelper";
 import Scope from "./scope";
 import ProxyFunction from "./proxyFunction";
+import Graph from '../../graph/graph';
+import Node from '../../graph/node';
+import Edge from '../../graph/edge';
 
 export default class ProxyRemover extends Modification {
     private readonly scopeTypes = new Set(['Block', 'FunctionBody']);
     private readonly proxyExpressionTypes = new Set(['CallExpression', 'BinaryExpression', 'ComputedMemberExpression', 'IdentifierExpression']);
     private shouldRemoveProxyFunctions: boolean;
     private globalScope: Scope;
+    private proxyFunctions: ProxyFunction[];
     private proxyFunctionNames: Set<string>;
+    private cyclicProxyFunctionIds: Set<string>;
+    private graph: Graph;
 
     /**
      * Creates a new modification.
@@ -21,7 +27,10 @@ export default class ProxyRemover extends Modification {
         super('Remove Proxy Functions', ast);
         this.shouldRemoveProxyFunctions = removeProxyFunctions;
         this.globalScope = new Scope(this.ast);
+        this.proxyFunctions = [];
         this.proxyFunctionNames = new Set<string>();
+        this.cyclicProxyFunctionIds = new Set<string>();
+        this.graph = new Graph();
     }
 
     /**
@@ -30,6 +39,7 @@ export default class ProxyRemover extends Modification {
     execute(): void {
         this.findProxyFunctions();
         this.findAliases();
+        this.findCycles();
         this.replaceProxyFunctionUsages(this.ast, this.globalScope);
         
         if (this.shouldRemoveProxyFunctions) {
@@ -49,27 +59,30 @@ export default class ProxyRemover extends Modification {
                 if (self.scopeTypes.has(node.type)) {
                     scope = new Scope(node, scope);
                 }
-                else if (self.isProxyFunctionDeclaration(node)) {
+
+                let proxyFunction: ProxyFunction;
+                if (self.isProxyFunctionDeclaration(node)) {
                     const name = (node as any).name.name;
                     const params = (node as any).params.items;
                     const expression = (node as any).body.statements[0].expression;
 
-                    const proxyFunction = new ProxyFunction(node, parent, name, params, expression);
-                    scope.addProxyFunction(proxyFunction);
-                    if (!self.proxyFunctionNames.has(name)) {
-                        self.proxyFunctionNames.add(name);
-                    }
+                    proxyFunction = new ProxyFunction(node, parent, scope, name, params, expression);
                 }
                 else if (self.isProxyFunctionExpressionDeclaration(node)) {
                     const name = (node as any).binding.name;
                     const params = (node as any).init.params.items;
                     const expression = (node as any).init.body.statements[0].expression;
 
-                    const proxyFunction = new ProxyFunction(node, parent, name, params, expression);
-                    scope.addProxyFunction(proxyFunction);
-                    if (!self.proxyFunctionNames.has(name)) {
-                        self.proxyFunctionNames.add(name);
-                    }
+                    proxyFunction = new ProxyFunction(node, parent, scope, name, params, expression);
+                } else {
+                    return;
+                }
+
+                scope.addProxyFunction(proxyFunction);
+                self.proxyFunctions.push(proxyFunction);
+                self.graph.addNode(new Node(proxyFunction.id));
+                if (!self.proxyFunctionNames.has(proxyFunction.name)) {
+                    self.proxyFunctionNames.add(proxyFunction.name);
                 }
             },
             leave(node: Shift.Node) {
@@ -117,6 +130,77 @@ export default class ProxyRemover extends Modification {
     }
 
     /**
+     * Finds cycles in the proxy function graph and excludes those
+     * proxy functions from replacing.
+     */
+    private findCycles(): void {
+        const self = this;
+
+        for (const proxyFunction of this.proxyFunctions) {
+            const thisNode = this.graph.findNode(proxyFunction.id) as Node;
+
+            let scope = proxyFunction.scope;
+            traverse(proxyFunction.expression, {
+                enter(node: Shift.Node) {
+                    if (self.scopeTypes.has(node.type)) {
+                        scope = scope.children.get(node) as Scope;
+                    }
+                    if (self.isFunctionCall(node)) {
+                        const name = (node as any).callee.name;
+                        if (self.proxyFunctionNames.has(name)) {
+                            const otherProxyFunction = scope.findProxyFunction(name);
+    
+                            if (otherProxyFunction) {
+                                const otherNode = self.graph.findNode(otherProxyFunction.id) as Node;
+                                self.graph.addEdge(new Edge(thisNode, otherNode));
+                            }
+                        }
+                    }
+                },
+                leave(node: Shift.Node) {
+                    if (node == scope.node && scope.parent) {
+                        scope = scope.parent;
+                    }
+                }
+            });
+        }
+
+        const seenNodes = new Set<Node>();
+        for (const node of this.graph.nodes) {
+            this.searchBranch(node, seenNodes);
+        }
+    }
+
+    /**
+     * Searches for cycles within a branch.
+     * @param node The current node.
+     * @param seenNodes The set of all previously seen nodes.
+     * @param branch The nodes in the current branch.
+     */
+    private searchBranch(node: Node, seenNodes: Set<Node>, branch?: Set<Node>): void {
+        if (seenNodes.has(node)) {
+            return;
+        }
+        seenNodes.add(node);
+
+        branch ??= new Set<Node>();
+        branch.add(node);
+
+        for (const edge of node.outgoingEdges) {
+            const target = edge.target;
+
+            if (branch.has(target)) { // cycle found
+                this.cyclicProxyFunctionIds.add(target.id);
+                for (const node of branch) {
+                    this.cyclicProxyFunctionIds.add(node.id);
+                }
+            } else {
+                this.searchBranch(target, seenNodes, branch);
+            }
+        }
+    }
+
+    /**
      * Replaces all usages of proxy functions in a given node.
      * @param node The node to replace usages in.
      * @param startScope The scope of the node.
@@ -139,7 +223,7 @@ export default class ProxyRemover extends Modification {
                     if (self.proxyFunctionNames.has(name)) {
                         const proxyFunction = scope.findProxyFunction(name);
 
-                        if (proxyFunction) {
+                        if (proxyFunction && !self.cyclicProxyFunctionIds.has(proxyFunction.id)) {
                             const args = (node as any).arguments;
                             let replacement: Shift.Node = proxyFunction.getReplacement(args);
                             replacement = self.replaceProxyFunctionUsages(replacement, scope);
@@ -169,7 +253,9 @@ export default class ProxyRemover extends Modification {
      */
     private removeProxyFunctions(scope: Scope): void {
         for (const [_, proxyFunction] of scope.proxyFunctions) {
-            TraversalHelper.removeNode(proxyFunction.parentNode, proxyFunction.node);
+            if (!this.cyclicProxyFunctionIds.has(proxyFunction.id)) {
+                TraversalHelper.removeNode(proxyFunction.parentNode, proxyFunction.node);
+            }
         }
 
         for (const [_, child] of scope.children) {
@@ -184,7 +270,8 @@ export default class ProxyRemover extends Modification {
     private isProxyFunctionDeclaration(node: Shift.Node): boolean {
         if (node.type == 'FunctionDeclaration' && node.body.statements.length == 1
             && node.body.statements[0].type == 'ReturnStatement' && node.body.statements[0].expression != null 
-            && this.proxyExpressionTypes.has(node.body.statements[0].expression.type) && node.params.items.find(p => p.type != 'BindingIdentifier') == undefined) {
+            && (this.proxyExpressionTypes.has(node.body.statements[0].expression.type) || node.body.statements[0].expression.type.startsWith('Literal'))
+            && node.params.items.find(p => p.type != 'BindingIdentifier') == undefined) {
                 const self = this;
                 let hasScopeNode = false;
                 traverse(node.body.statements[0].expression, {
@@ -209,7 +296,8 @@ export default class ProxyRemover extends Modification {
         if (node.type == 'VariableDeclarator' && node.binding.type == 'BindingIdentifier'
             && node.init != null && node.init.type == 'FunctionExpression'
             && node.init.body.statements.length == 1 && node.init.body.statements[0].type == 'ReturnStatement'
-            && node.init.body.statements[0].expression != null && this.proxyExpressionTypes.has(node.init.body.statements[0].expression.type)) {
+            && node.init.body.statements[0].expression != null 
+            && (this.proxyExpressionTypes.has(node.init.body.statements[0].expression.type) || node.init.body.statements[0].expression.type.startsWith('Literal'))) {
                 const self = this;
                 let hasScopeNode = false;
                 traverse(node.init.body.statements[0].expression, {
