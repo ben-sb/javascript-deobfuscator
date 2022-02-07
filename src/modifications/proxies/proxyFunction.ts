@@ -3,10 +3,14 @@ import parseScript from 'shift-parser';
 import codegen from 'shift-codegen';
 import { traverse } from '../../helpers/traverse';
 import TraversalHelper from '../../helpers/traversalHelper';
+import Scope from './scope';
+import { v4 as uuid } from 'uuid';
 
 export default class ProxyFunction {
+    id: string;
     node: Shift.Node;
     parentNode: Shift.Node;
+    scope: Scope;
     name: string;
     params: Shift.BindingIdentifier[];
     expression: Shift.Expression;
@@ -15,13 +19,16 @@ export default class ProxyFunction {
      * Creates a new proxy function.
      * @param node The function node.
      * @param parentNode The parent node.
+     * @param scope The scope the function is within.
      * @param name The name of the proxy function.
      * @param params The parameters of the proxy function.
      * @param expression The expression returned by the proxy function.
      */
-    constructor(node: Shift.Node, parentNode: Shift.Node, name: string, params: Shift.BindingIdentifier[], expression: Shift.Expression) {
+    constructor(node: Shift.Node, parentNode: Shift.Node, scope: Scope, name: string, params: Shift.BindingIdentifier[], expression: Shift.Expression) {
+        this.id = uuid().replace(/-/g, '');
         this.node = node;
         this.parentNode = parentNode;
+        this.scope = scope;
         this.name = name;
         this.params = params;
         this.expression = expression;
