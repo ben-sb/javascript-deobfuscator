@@ -104,7 +104,11 @@ export default class ExpressionSimplifier extends Modification {
     private getExpressionValueAsString(expression: Shift.Expression): string | null {
         switch (expression.type) {
             case 'LiteralStringExpression':
-                return `"${expression.value.replace(/"/g, '\\"')}"`;
+                const value = expression.value
+                    .replace(/"/g, '\\"')
+                    .replace(/\n/g, '\\n')
+                    .replace(/\r/g, '\\r');
+                return `"${value}"`;
 
             case 'LiteralNumericExpression':
                 return expression.value.toString();
@@ -129,7 +133,7 @@ export default class ExpressionSimplifier extends Modification {
         let value;
         try {
             value = eval(code);
-        } catch {
+        } catch (err) {
             return null;
         }
 
