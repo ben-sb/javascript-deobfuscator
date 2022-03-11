@@ -10,7 +10,7 @@ import Edge from '../../graph/edge';
 
 export default class ProxyRemover extends Modification {
     private readonly scopeTypes = new Set(['Block', 'FunctionBody']);
-    private readonly proxyExpressionTypes = new Set(['CallExpression', 'BinaryExpression', 'ComputedMemberExpression', 'IdentifierExpression']);
+    private readonly proxyExpressionTypes = new Set(['CallExpression', 'BinaryExpression', 'UnaryExpression', 'ComputedMemberExpression', 'IdentifierExpression']);
     private shouldRemoveProxyFunctions: boolean;
     private globalScope: Scope;
     private proxyFunctions: ProxyFunction[];
@@ -146,13 +146,15 @@ export default class ProxyRemover extends Modification {
                         scope = scope.children.get(node) as Scope;
                     }
                     if (self.isFunctionCall(node)) {
-                        const name = (node as any).callee.name;
-                        if (self.proxyFunctionNames.has(name)) {
-                            const otherProxyFunction = scope.findProxyFunction(name);
+                        const calleeName = (node as any).callee.name;
+                        if (self.proxyFunctionNames.has(calleeName)) {
+                            const otherProxyFunction = scope.findProxyFunction(calleeName);
     
                             if (otherProxyFunction) {
                                 const otherNode = self.graph.findNode(otherProxyFunction.id) as Node;
-                                self.graph.addEdge(new Edge(thisNode, otherNode));
+                                if (!self.graph.hasEdge(`${thisNode.id} -> ${otherNode.id}`)) {
+                                    self.graph.addEdge(new Edge(thisNode, otherNode));
+                                }
                             }
                         }
                     }
