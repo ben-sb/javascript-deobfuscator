@@ -4,12 +4,13 @@ import { Scope, ScopeType } from "./scope";
 import { traverse } from '../../helpers/traverse';
 import { blockScopedTypes, Variable } from "./variable";
 import names from './names.json';
+import NameMapping from './nameMapping';
 
 export default class VariableRenamer extends Modification {
-    private readonly ALPHABET = 'abcdefghijklmnopqrstuvwxyz';
     private globalScope: Scope;
     private variableNames: string[];
     private usedVariableNames: Set<string>;
+    private nameMapping: NameMapping;
 
     /**
      * Creates a new modification.
@@ -22,6 +23,7 @@ export default class VariableRenamer extends Modification {
         this.usedVariableNames = new Set<string>([
             'if', 'do', 'in', 'var', 'let', 'try', 'for'
         ]);
+        this.nameMapping = new NameMapping();
     }
 
     /**
@@ -187,17 +189,29 @@ export default class VariableRenamer extends Modification {
      * children.
      * @param scope The scope.
      */
-    private renameVariables(scope: Scope): void {
+    private renameVariables(scope: Scope, parentMapping: NameMapping = this.nameMapping): void {
+        const nameMapping = new NameMapping();
+        parentMapping.addChild(nameMapping);
+
         for (const [name, variable] of scope.variables) {
             if (this.shouldRename(name)) {
                 const newName = this.getVariableName();
                 variable.rename(newName);
+                nameMapping.addMapping(name, newName);
             }
         }
 
         for (const childScope of scope.children) {
-            this.renameVariables(childScope);
+            this.renameVariables(childScope, nameMapping);
         }
+    }
+
+    /**
+     * Returns the name mapping.
+     * @returns The name mapping.
+     */
+    getNameMapping(): any {
+        return this.nameMapping.serialize();
     }
 
     /**
