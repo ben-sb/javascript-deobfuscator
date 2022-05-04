@@ -12,6 +12,12 @@ import VariableRenamer from './modifications/renaming/variableRenamer';
 import FunctionExecutor from './modifications/execution/functionExecutor';
 import DeadBranchRemover from './modifications/branches/deadBranchRemover';
 
+/**
+ * Deobfuscates a given source script.
+ * @param source The source script.
+ * @param config The deobfuscation configuration.
+ * @returns The deobfuscated script.
+ */
 export function deobfuscate(source: string, config: Config): string {
     const ast = parseScript(source) as Shift.Script;
     const modifications: Modification[] = [];
