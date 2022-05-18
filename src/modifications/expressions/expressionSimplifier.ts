@@ -111,7 +111,33 @@ export default class ExpressionSimplifier extends Modification {
                 return `"${value}"`;
 
             case 'LiteralNumericExpression':
+            case 'LiteralBooleanExpression':
                 return expression.value.toString();
+
+            case 'ArrayExpression':
+                if (expression.elements.length == 0) {
+                    return '[]';
+                } else if (expression.elements.every(e => !e || e.type.startsWith('Literal'))) {
+                    let content = '';
+                    for (let i=0; i<expression.elements.length; i++) {
+                        if (expression.elements[i]) {
+                            content += `${this.getExpressionValueAsString(expression.elements[i] as Shift.Expression)},`;
+                        } else {
+                            content += ',';
+                        }
+                    }
+                    return `[${content.substring(0, content.length - 1)}]`;
+                } else {
+                    return null;
+                }
+            
+            case 'ObjectExpression':
+                if (expression.properties.length == 0) {
+                    expression.properties
+                    return '[]';
+                } else {
+                    return null;
+                }
 
             case 'UnaryExpression':
                 const operand = this.getExpressionValueAsString(expression.operand);
@@ -156,5 +182,9 @@ export default class ExpressionSimplifier extends Modification {
             default:
                 return null;
         }
+    }
+
+    private isSimpleArray(array: Shift.ArrayExpression): boolean {
+        return array.elements.every(e => !e || e.type.startsWith('Literal'));
     }
 }
