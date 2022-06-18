@@ -1,7 +1,7 @@
 import * as Shift from 'shift-ast';
 import { v4 as uuid } from 'uuid';
 import { traverse } from '../../helpers/traverse';
-import codegen from 'shift-codegen';
+import { codeGen } from 'shift-codegen';
 
 export default class ExecutedFunction {
     func: FunctionType;
@@ -54,7 +54,7 @@ export default class ExecutedFunction {
         this.replaceSelfReferences(func);
 
         try {
-            const code = codegen(func);
+            const code = codeGen(func);
             eval.call(this, code);
         } catch (err) {
             this.didError = true;
@@ -80,7 +80,7 @@ export default class ExecutedFunction {
                 arguments: args
             });
 
-            const code = codegen(callExpression);
+            const code = codeGen(callExpression);
             return eval.call(this, code);
         } catch (err) {
             return null;

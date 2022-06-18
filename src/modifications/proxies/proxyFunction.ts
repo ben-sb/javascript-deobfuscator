@@ -1,6 +1,6 @@
 import * as Shift from 'shift-ast';
 import parseScript from 'shift-parser';
-import codegen from 'shift-codegen';
+import { codeGen } from 'shift-codegen';
 import { traverse } from '../../helpers/traverse';
 import TraversalHelper from '../../helpers/traversalHelper';
 import Scope from './scope';
@@ -97,7 +97,7 @@ export default class ProxyFunction {
      * @param node The expression node.
      */
     private duplicateExpression(expression: Shift.Expression): Shift.Expression {
-        const code = codegen(expression);
+        const code = codeGen(expression);
         const ast = parseScript(code);
         return ast.statements[0].expression;
     }
