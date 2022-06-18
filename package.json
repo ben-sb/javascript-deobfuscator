@@ -1,6 +1,6 @@
 {
   "name": "javascript-deobfuscator",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   "dependencies": {
     "estraverse": "^4.2.0",
     "shift-ast": "^6.1.0",
-    "shift-codegen": "^7.0.3",
+    "shift-codegen": "github:ben-sb/shift-codegen-js",
     "shift-parser": "^7.0.3",
     "shift-validator": "^5.0.1",
     "uuid": "^8.3.2"

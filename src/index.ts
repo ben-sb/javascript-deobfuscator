@@ -1,6 +1,6 @@
 import parseScript from 'shift-parser';
 import * as Shift from 'shift-ast';
-import codegen, { FormattedCodeGen } from 'shift-codegen';
+import { codeGen, FormattedCodeGen } from 'shift-codegen';
 import Modification from './modification';
 import ProxyRemover from './modifications/proxies/proxyRemover';
 import ExpressionSimplifier from './modifications/expressions/expressionSimplifier';
@@ -61,8 +61,8 @@ export function deobfuscate(source: string, config: Config): string {
 
     CleanupHelper.cleanup(ast);
     const output = config.miscellaneous.beautify
-        ? codegen(ast, new FormattedCodeGen())
-        : codegen(ast);
+        ? codeGen(ast, new FormattedCodeGen())
+        : codeGen(ast);
 
     return output;
 }
