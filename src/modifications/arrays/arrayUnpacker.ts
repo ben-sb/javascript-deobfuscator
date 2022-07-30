@@ -7,8 +7,9 @@ import TraversalHelper from "../../helpers/traversalHelper";
 
 export default class ArrayUnpacker extends Modification {
     private readonly scopeTypes = new Set(['Block', 'FunctionBody']);
-    private shouldRemoveArrays: boolean;
-    private globalScope: Scope;
+    private readonly shouldRemoveArrays: boolean;
+    private readonly globalScope: Scope;
+    private readonly arrayNodes: Set<Shift.Node>;
 
     /**
      * Creates a new modification.
@@ -19,15 +20,17 @@ export default class ArrayUnpacker extends Modification {
         super('Unpack Arrays', ast);
         this.shouldRemoveArrays = removeArrays;
         this.globalScope = new Scope(this.ast);
+        this.arrayNodes = new Set<Shift.Node>();
     }
 
     /**
      * Executes the modification.
      */
     execute(): void {
-        this.findArrays();
-        this.unpackArrays();
-        
+        while (this.findArrays()) {
+            this.unpackArrays();
+        }
+
         if (this.shouldRemoveArrays) {
             this.removeArrays(this.globalScope);
         }
@@ -36,21 +39,25 @@ export default class ArrayUnpacker extends Modification {
     /**
      * Finds all literal arrays and stores them in the according scope.
      */
-    private findArrays(): void {
+    private findArrays(): boolean {
         const self = this;
         let scope = this.globalScope;
+        let foundArrays = false;
 
         traverse(this.ast, {
             enter(node: Shift.Node, parent: Shift.Node) {
                 if (self.scopeTypes.has(node.type)) {
                     scope = new Scope(node, scope);
                 }
-                else if (self.isLiteralArrayDeclaration(node)) {
+                else if (self.isLiteralArrayDeclaration(node) && !self.arrayNodes.has(node)) {
                     const name = (node as any).binding.name;
                     const elements = (node as any).init.elements;
 
                     const array = new Array(node, parent, name, elements);
                     scope.addArray(array);
+
+                    self.arrayNodes.add(node);
+                    foundArrays = true;
                 }
             },
             leave(node: Shift.Node) {
@@ -59,6 +66,8 @@ export default class ArrayUnpacker extends Modification {
                 }
             }
         });
+
+        return foundArrays;
     }
 
     /**
