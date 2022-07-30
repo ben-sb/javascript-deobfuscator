@@ -38,6 +38,7 @@ export default class ArrayUnpacker extends Modification {
 
     /**
      * Finds all literal arrays and stores them in the according scope.
+     * @returns Whether any new literal arrays were found.
      */
     private findArrays(): boolean {
         const self = this;
