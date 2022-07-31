@@ -5,6 +5,8 @@ Open an issue if there is a feature you think should be implemented.
 
 Online version at [deobfuscate.io](https://deobfuscate.io)
 
+Install via `npm install js-deobfuscator`
+
 ## Features
 * Unpacks arrays containing literals (strings, numbers etc) and replaces all references to them
 * Removes simple proxy functions (calls to another function), array proxy functions and arithmetic proxy functions (binary expressions)
@@ -200,6 +202,30 @@ A few important points about function evaluation:
 * If the function is not a function declaration (i.e. a function expression or an arrow function expression) then the deobfuscator will not be able to detect the name of it automatically. To provide it use "#execute[name=FUNC_NAME]" directive.
 * You may need to modify the function to ensure it relies on no external variables (i.e. move a string array declaration inside the function) and handle any extra logic like string array rotation first.
 * You must first remove any anti tampering mechanisms before using function evaluation, otherwise it may cause an infinite loop.
+
+
+## Config
+```typescript
+interface Config {
+    arrays: {
+        unpackArrays: boolean;
+        removeArrays: boolean;
+    };
+    proxyFunctions: {
+        replaceProxyFunctions: boolean;
+        removeProxyFunctions: boolean;
+    };
+    expressions: {
+        simplifyExpressions: boolean;
+        removeDeadBranches: boolean;
+    };
+    miscellaneous: {
+        beautify: boolean;
+        simplifyProperties: boolean;
+        renameHexIdentifiers: boolean;
+    };
+}
+```
 
 ## To Run
 Put the obfuscated script in input/source.js and run:<br/>
