@@ -12,13 +12,34 @@ import VariableRenamer from './modifications/renaming/variableRenamer';
 import FunctionExecutor from './modifications/execution/functionExecutor';
 import DeadBranchRemover from './modifications/branches/deadBranchRemover';
 
+const defaultConfig: Config = {
+    verbose: false,
+    arrays: {
+        unpackArrays: true,
+        removeArrays: true
+    },
+    proxyFunctions: {
+        replaceProxyFunctions: true,
+        removeProxyFunctions: true
+    },
+    expressions: {
+        simplifyExpressions: true,
+        removeDeadBranches: true
+    },
+    miscellaneous: {
+        beautify: true,
+        simplifyProperties: true,
+        renameHexIdentifiers: false
+    }
+};
+
 /**
  * Deobfuscates a given source script.
  * @param source The source script.
- * @param config The deobfuscation configuration.
+ * @param config The deobfuscation configuration (optional).
  * @returns The deobfuscated script.
  */
-export function deobfuscate(source: string, config: Config): string {
+export function deobfuscate(source: string, config: Config = defaultConfig): string {
     const ast = parseScript(source) as Shift.Script;
     const modifications: Modification[] = [];
 
@@ -55,7 +76,9 @@ export function deobfuscate(source: string, config: Config): string {
     }
 
     for (const modification of modifications) {
-        console.log(`[${(new Date()).toISOString()}]: Executing ${modification.constructor.name}`);
+        if (config.verbose) {
+            console.log(`[${(new Date()).toISOString()}]: Executing ${modification.constructor.name}`);
+        }
         modification.execute();
     }
 

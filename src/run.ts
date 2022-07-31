@@ -3,6 +3,7 @@ import fs from 'fs';
 
 const source = fs.readFileSync('input/source.js').toString();
 const config = {
+    verbose: true,
     arrays: {
         unpackArrays: true,
         removeArrays: true

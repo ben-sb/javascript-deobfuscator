@@ -1,4 +1,5 @@
 export default interface Config {
+    verbose: boolean;
     arrays: ArraysConfig;
     proxyFunctions: ProxyFunctionsConfig;
     expressions: ExpressionsConfig;
