@@ -3,6 +3,9 @@
   "version": "1.0.19",
   "description": "",
   "main": "dist/index.js",
+  "bin": {
+    "js-deobfuscator": "dist/run.js"
+  },
   "types": "dist/index.d.ts",
   "scripts": {
     "start": "tsc && node dist/run.js",
@@ -11,6 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "commander": "^9.4.0",
     "estraverse": "^4.2.0",
     "shift-ast": "^6.1.0",
     "shift-codegen": "github:ben-sb/shift-codegen-js",

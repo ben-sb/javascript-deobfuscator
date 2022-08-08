@@ -228,8 +228,22 @@ interface Config {
 ```
 
 ## To Run
-Put the obfuscated script in input/source.js and run:<br/>
-**npm start**
-<br/>
+
+I updated the `run.ts` and it support input/output arguments now. Install via  `npm i -g js-deobfuscator` and try `js-deobfuscator` cli.
+
+```shell
+> js-deobfuscator -h
+Usage: run [options]
+
+Deobfuscate a javascript file
+
+Options:
+  -i, --input [input_file]    The input file to deobfuscate (default: "input/source.js")
+  -o, --output [output_file]  The deobfuscated output file (default: "output/source.js")
+  -f, --force                 Whether overwrite the output file or not
+  -h, --help                  display help for command
+
+> 
+```
 
 Or use the online version at [deobfuscate.io](https://deobfuscate.io)
