@@ -3,13 +3,13 @@
 import { deobfuscate } from "./index";
 import fs from 'fs';
 import { Command } from 'commander';
-const program = new Command();
 
+const program = new Command();
 program
   .description('Deobfuscate a javascript file')
   .option('-i, --input [input_file]', 'The input file to deobfuscate', 'input/source.js')
-  .option('-o, --output [output_file]', 'The deobfuscated output file', 'output/source.js')
-  .option('-f, --force', 'Whether overwrite the output file or not')
+  .option('-o, --output [output_file]', 'The deobfuscated output file', 'output/output.js')
+  .option('-f, --force', 'Whether to overwrite the output file or not')
 
 program.parse(process.argv);
 const options = program.opts();
@@ -18,16 +18,14 @@ console.info(`The cli options are: ${JSON.stringify(options)}`);
 
 // check if the input file exists
 if (!fs.existsSync(options.input)) {
-    console.error(`The input file ${options.input} does not exist!`);
+    console.error(`The input file ${options.input} does not exist`);
     process.exit(1);
 }
 
 // check if the output file exists
 if (fs.existsSync(options.output)) {
-    console.warn(`The output file ${options.output} already exists!`);
-    if(!options.force) {
-        console.warn(`The output file ${options.output} will be overwritten!`)
-        console.error(`Use -f to force overwrite`);
+    if (!options.force) {
+        console.warn(`The output file ${options.output} already exists, use -f to force overwrite`)
         process.exit(1);
     }
 }
