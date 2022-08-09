@@ -1,7 +1,36 @@
+#!/usr/bin/env node
+
 import { deobfuscate } from "./index";
 import fs from 'fs';
+import { Command } from 'commander';
 
-const source = fs.readFileSync('input/source.js').toString();
+const program = new Command();
+program
+  .description('Deobfuscate a javascript file')
+  .option('-i, --input [input_file]', 'The input file to deobfuscate', 'input/source.js')
+  .option('-o, --output [output_file]', 'The deobfuscated output file', 'output/output.js')
+  .option('-f, --force', 'Whether to overwrite the output file or not')
+
+program.parse(process.argv);
+const options = program.opts();
+
+console.info(`The cli options are: ${JSON.stringify(options)}`);
+
+// check if the input file exists
+if (!fs.existsSync(options.input)) {
+    console.error(`The input file ${options.input} does not exist`);
+    process.exit(1);
+}
+
+// check if the output file exists
+if (fs.existsSync(options.output)) {
+    if (!options.force) {
+        console.warn(`The output file ${options.output} already exists, use -f to force overwrite`)
+        process.exit(1);
+    }
+}
+
+const source = fs.readFileSync(options.input).toString();
 const config = {
     verbose: true,
     arrays: {
@@ -24,4 +53,5 @@ const config = {
 };
 
 const output = deobfuscate(source, config);
-fs.writeFileSync('output/output.js', output);
+fs.writeFileSync(options.output, output);
+console.info(`The output file ${options.output} has been created`);
