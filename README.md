@@ -228,8 +228,22 @@ interface Config {
 ```
 
 ## To Run
-Put the obfuscated script in input/source.js and run:<br/>
-**npm start**
-<br/>
 
-Or use the online version at [deobfuscate.io](https://deobfuscate.io)
+Either install the module locally via `npm install js-deobfuscator` and import as usual or install globally `npm install -g js-deobfuscator` and use the `js-deobfuscator` CLI:
+
+```shell
+> js-deobfuscator -h
+Usage: run [options]
+
+Deobfuscate a javascript file
+
+Options:
+  -i, --input [input_file]    The input file to deobfuscate (default: "input/source.js")
+  -o, --output [output_file]  The deobfuscated output file (default: "output/output.js")
+  -f, --force                 Whether to overwrite the output file or not
+  -h, --help                  display help for command
+
+> 
+```
+
+Alternatively use the online version at [deobfuscate.io](https://deobfuscate.io)
