@@ -97,9 +97,18 @@ export default class ProxyFunction {
      * @param node The expression node.
      */
     private duplicateExpression(expression: Shift.Expression): Shift.Expression {
-        const code = codeGen(expression);
+        const blockStatement = new Shift.BlockStatement({
+            block: new Shift.Block({
+                statements: [
+                    new Shift.ExpressionStatement({
+                        expression
+                    })
+                ]
+            })
+        });
+        const code = codeGen(blockStatement);
         const ast = parseScript(code);
-        return ast.statements[0].expression;
+        return ast.statements[0].block.statements[0].expression;
     }
 }
 

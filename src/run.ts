@@ -8,8 +8,7 @@ const program = new Command();
 program
   .description('Deobfuscate a javascript file')
   .option('-i, --input [input_file]', 'The input file to deobfuscate', 'input/source.js')
-  .option('-o, --output [output_file]', 'The deobfuscated output file', 'output/output.js')
-  .option('-f, --force', 'Whether to overwrite the output file or not')
+  .option('-o, --output [output_file]', 'The deobfuscated output file', 'output/output.js');
 
 program.parse(process.argv);
 const options = program.opts();
@@ -20,14 +19,6 @@ console.info(`The cli options are: ${JSON.stringify(options)}`);
 if (!fs.existsSync(options.input)) {
     console.error(`The input file ${options.input} does not exist`);
     process.exit(1);
-}
-
-// check if the output file exists
-if (fs.existsSync(options.output)) {
-    if (!options.force) {
-        console.warn(`The output file ${options.output} already exists, use -f to force overwrite`)
-        process.exit(1);
-    }
 }
 
 const source = fs.readFileSync(options.input).toString();
