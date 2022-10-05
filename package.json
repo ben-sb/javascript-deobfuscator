@@ -9,7 +9,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "start": "tsc && node dist/run.js",
-    "prepare": "tsc"
+    "prepare": "tsc",
+    "pretty": "npx prettier --write ."
   },
   "author": "",
   "license": "ISC",

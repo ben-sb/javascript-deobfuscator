@@ -1,1 +1,1 @@
-declare module 'shift-parser';
+declare module "shift-parser";
