@@ -1,1 +1,1 @@
-declare module 'shift-validator';
+declare module "shift-validator";

@@ -1,1 +1,1 @@
-declare module 'shift-scope';
+declare module "shift-scope";

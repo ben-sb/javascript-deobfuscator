@@ -1,1 +1,1 @@
-declare module 'shift-codegen';
+declare module "shift-codegen";

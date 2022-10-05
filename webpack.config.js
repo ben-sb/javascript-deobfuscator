@@ -1,22 +1,22 @@
-const path = require('path');
+const path = require("path");
 
 module.exports = {
-  entry: './src/index.ts',
+  entry: "./src/index.ts",
   resolve: {
-    extensions: [ '.tsx', '.ts', '.js' ],
+    extensions: [".tsx", ".ts", ".js"],
   },
   module: {
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
+        use: "ts-loader",
         exclude: /node_modules/,
       },
     ],
   },
   output: {
-    filename: 'main.js',
-    path: path.resolve(__dirname, 'web'),
-    library: 'deobfuscator'
-  }
+    filename: "main.js",
+    path: path.resolve(__dirname, "web"),
+    library: "deobfuscator",
+  },
 };
