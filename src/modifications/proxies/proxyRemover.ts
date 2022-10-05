@@ -72,27 +72,13 @@ export default class ProxyRemover extends Modification {
                     const params = (node as any).params.items;
                     const expression = (node as any).body.statements[0].expression;
 
-                    proxyFunction = new ProxyFunction(
-                        node,
-                        parent,
-                        scope,
-                        name,
-                        params,
-                        expression
-                    );
+                    proxyFunction = new ProxyFunction(node, parent, scope, name, params, expression);
                 } else if (self.isProxyFunctionExpressionDeclaration(node)) {
                     const name = (node as any).binding.name;
                     const params = (node as any).init.params.items;
                     const expression = (node as any).init.body.statements[0].expression;
 
-                    proxyFunction = new ProxyFunction(
-                        node,
-                        parent,
-                        scope,
-                        name,
-                        params,
-                        expression
-                    );
+                    proxyFunction = new ProxyFunction(node, parent, scope, name, params, expression);
                 } else {
                     return;
                 }
@@ -170,9 +156,7 @@ export default class ProxyRemover extends Modification {
                             const otherProxyFunction = scope.findProxyFunction(calleeName);
 
                             if (otherProxyFunction) {
-                                const otherNode = self.graph.findNode(
-                                    otherProxyFunction.id
-                                ) as Node;
+                                const otherNode = self.graph.findNode(otherProxyFunction.id) as Node;
                                 if (!self.graph.hasEdge(`${thisNode.id} -> ${otherNode.id}`)) {
                                     self.graph.addEdge(new Edge(thisNode, otherNode));
                                 }

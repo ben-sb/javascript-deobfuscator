@@ -7,11 +7,8 @@ import TraversalHelper from '../../helpers/traversalHelper';
 
 export default class FunctionExecutor extends Modification {
     private readonly scopeTypes = new Set(['Block', 'FunctionBody']);
-    private readonly functionTypes = new Set([
-        'FunctionDeclaration',
-        'FunctionExpression',
-        'ArrowExpression'
-    ]);
+    private readonly functionTypes = new Set(['FunctionDeclaration', 'FunctionExpression', 'ArrowExpression']);
+    private executedFunctions: ExecutedFunction[];
     private globalScope: Scope;
     private foundExecutedFunction: boolean;
 
@@ -21,6 +18,7 @@ export default class FunctionExecutor extends Modification {
      */
     constructor(ast: Shift.Script) {
         super('Execute Functions', ast);
+        this.executedFunctions = [];
         this.globalScope = new Scope(ast);
         this.foundExecutedFunction = false;
     }
@@ -34,6 +32,7 @@ export default class FunctionExecutor extends Modification {
             this.findAliases();
             this.replaceFunctionCalls();
         }
+        this.removeFunctions();
     }
 
     /**
@@ -60,10 +59,9 @@ export default class FunctionExecutor extends Modification {
                             }
                         }
 
-                        const executedFunction = new ExecutedFunction(node as any, name);
+                        const executedFunction = new ExecutedFunction(node as any, parent, name);
                         scope.addExecutedFunction(executedFunction);
-
-                        TraversalHelper.removeNode(parent, node);
+                        self.executedFunctions.push(executedFunction);
 
                         if (!self.foundExecutedFunction) {
                             self.foundExecutedFunction = true;
@@ -133,6 +131,8 @@ export default class FunctionExecutor extends Modification {
 
                         if (replacement) {
                             TraversalHelper.replaceNode(parent, node, replacement);
+                        } else {
+                            executedFunction.failedReplacement = true;
                         }
                     }
                 }
@@ -146,11 +146,20 @@ export default class FunctionExecutor extends Modification {
     }
 
     /**
+     * Attempts to remove all executed functions.
+     */
+    private removeFunctions(): void {
+        for (const func of this.executedFunctions) {
+            func.remove();
+        }
+    }
+
+    /**
      * Attempts to convert a literal value to an AST node.
      * @param value The literal value.
      * @returns The AST node or null.
      */
-    private literalValueToNode(value: any): Shift.Node | null {
+    private literalValueToNode(value: any): Shift.Expression | null {
         switch (typeof value) {
             case 'string':
                 return new Shift.LiteralStringExpression({
@@ -166,6 +175,26 @@ export default class FunctionExecutor extends Modification {
                 return new Shift.LiteralBooleanExpression({
                     value: value
                 });
+
+            case 'object': {
+                if (value == null) {
+                    return new Shift.LiteralNullExpression();
+                } else if (Array.isArray(value)) {
+                    const elements = [];
+                    for (let i = 0; i < value.length; i++) {
+                        const element = this.literalValueToNode(value[i]);
+                        if (element == null) {
+                            return null;
+                        }
+                        elements.push(element);
+                    }
+                    return new Shift.ArrayExpression({
+                        elements
+                    });
+                } else {
+                    return null;
+                }
+            }
 
             default:
                 return null;
