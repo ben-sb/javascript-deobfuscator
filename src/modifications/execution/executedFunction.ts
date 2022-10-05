@@ -2,21 +2,27 @@ import * as Shift from 'shift-ast';
 import { v4 as uuid } from 'uuid';
 import { traverse } from '../../helpers/traverse';
 import { codeGen } from 'shift-codegen';
+import TraversalHelper from '../../helpers/traversalHelper';
 
 export default class ExecutedFunction {
     func: FunctionType;
+    parent: Shift.Node;
     name?: string;
+    failedReplacement: boolean;
     private id: string;
     private didError: boolean;
 
     /**
      * Creates a new executed function.
-     * @param body The body of the function.
+     * @param func The function node.
+     * @param parent The parent node.
      * @param name The name of the function (optional).
      */
-    constructor(func: FunctionType, name?: string) {
+    constructor(func: FunctionType, parent: Shift.Node, name?: string) {
         this.func = func;
+        this.parent = parent;
         this.name = name;
+        this.failedReplacement = false;
         this.id = uuid().replace(/-/g, '_');
         this.didError = false;
 
@@ -89,6 +95,15 @@ export default class ExecutedFunction {
     }
 
     /**
+     * Removes the executed function.
+     */
+    remove(): void {
+        if (!this.failedReplacement && !this.didError) {
+            TraversalHelper.removeNode(this.parent, this.func);
+        }
+    }
+
+    /**
      * Replaces references to the function itself within a given node.
      * @param node The AST node.
      */
@@ -101,8 +116,7 @@ export default class ExecutedFunction {
         traverse(node, {
             enter(node: Shift.Node, parent: Shift.Node) {
                 if (
-                    (node.type == 'IdentifierExpression' ||
-                        node.type == 'AssignmentTargetIdentifier') &&
+                    (node.type == 'IdentifierExpression' || node.type == 'AssignmentTargetIdentifier') &&
                     node.name == self.name
                 ) {
                     node.name = `EXECUTED_FUNCTION_${self.id}`;
@@ -112,7 +126,4 @@ export default class ExecutedFunction {
     }
 }
 
-export type FunctionType =
-    | Shift.FunctionDeclaration
-    | Shift.FunctionExpression
-    | Shift.ArrowExpression;
+export type FunctionType = Shift.FunctionDeclaration | Shift.FunctionExpression | Shift.ArrowExpression;
