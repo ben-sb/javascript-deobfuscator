@@ -233,7 +233,7 @@ export default class ProxyRemover extends Modification {
                         if (proxyFunction && !self.cyclicProxyFunctionIds.has(proxyFunction.id)) {
                             const args = (node as any).arguments;
                             let replacement: Shift.Node = proxyFunction.getReplacement(args);
-                            replacement = self.replaceProxyFunctionUsages(replacement, scope);
+                            replacement = self.replaceProxyFunctionUsages(replacement, proxyFunction.scope);
 
                             if (parent) {
                                 TraversalHelper.replaceNode(parent, node, replacement);
