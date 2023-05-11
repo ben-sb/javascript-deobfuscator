@@ -139,7 +139,7 @@ export default class ExpressionSimplifier extends Modification {
 
             case 'UnaryExpression':
                 const operand = this.getExpressionValueAsString(expression.operand);
-                return operand != null ? expression.operator + operand : null;
+                return operand != null ? `${expression.operator} ${operand}` : null;
 
             default:
                 return null;
