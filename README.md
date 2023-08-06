@@ -3,6 +3,8 @@
 A simple but powerful deobfuscator to remove common JavaScript obfuscation techniques.
 Open an issue if there is a feature you think should be implemented.
 
+Looking for a deobfuscator specific to Obfuscator.io/javascript-obfuscator? Try [this repo](https://github.com/ben-sb/deobfuscator-io)
+
 Online version at [deobfuscate.io](https://deobfuscate.io)
 
 Install via `npm install js-deobfuscator`
