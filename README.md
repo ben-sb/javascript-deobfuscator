@@ -9,6 +9,8 @@ Online version at [deobfuscate.io](https://deobfuscate.io)
 
 Install via `npm install js-deobfuscator`
 
+If you would like to discuss/learn about JavaScript obfuscation and deobfuscation you can join the [Discord server](https://discord.com/invite/s6db4pauq)
+
 ## Features
 
 -   Unpacks arrays containing literals (strings, numbers etc) and replaces all references to them
