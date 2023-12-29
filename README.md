@@ -9,7 +9,7 @@ Install via `npm install js-deobfuscator`
 
 Looking for a deobfuscator specific to Obfuscator.io/javascript-obfuscator? Try [this repo](https://github.com/ben-sb/deobfuscator-io)
 
-If you would like to discuss/learn about JavaScript obfuscation and deobfuscation you can join the [Discord server](https://discord.com/invite/s6db4pauq)
+If you would like to discuss/learn about JavaScript obfuscation and deobfuscation you can join the [Discord server](https://discord.com/invite/KQjZx2X28n)
 
 ## Features
 
