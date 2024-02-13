@@ -6,7 +6,7 @@
   "bin": "dist/cli.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "start": "tsc && node dist/run.js",
+    "start": "tsc && node dist/cli.js",
     "prepare": "tsc",
     "pretty": "npx prettier --write ."
   },
