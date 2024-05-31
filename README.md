@@ -19,7 +19,6 @@ If you would like to discuss/learn about JavaScript obfuscation and deobfuscatio
 -   Simplifies string concatenation
 -   Renames unreadable hexadecimal identifiers (e.g. \_0xca830a)
 -   Converts computed to static member expressions and beautifies the code
--   _Experimental_ function evaluation
 
 ## Examples
 
@@ -188,54 +187,6 @@ const message = 'Hello World';
 const result = 40106;
 console.log(message + ' ' + result);
 ```
-
-## Advanced Usage
-
-### Function Evaluation
-
-Often obfuscated scripts don't just use an array of strings, instead they have string decoder functions that execute more complex logic, such as the example below.
-
-```javascript
-function _0x29e92(_0x337a9) {
-    const _0x38a2db = ['\x48\x65\x6c\x6c\x6f', '\x20', '\x57\x6f\x72\x6c\x64'];
-    const _0x9ca21 = _0x337a9 - 0x1;
-    const _0xa8291 = _0x38a2db[_0x9ca21];
-    return _0xa8291;
-}
-
-const _0x78e2 = _0x29e92(1) + _0x29e92(2) + _0x29e92(3);
-console.log(_0x78e2);
-```
-
-To tell the deobfuscator to execute this function, you can use the "#execute" directive like so:
-
-```javascript
-function _0x29e92(_0x337a9) {
-    '#execute';
-    const _0x38a2db = ['\x48\x65\x6c\x6c\x6f', '\x20', '\x57\x6f\x72\x6c\x64'];
-    const _0x9ca21 = _0x337a9 - 0x1;
-    const _0xa8291 = _0x38a2db[_0x9ca21];
-    return _0xa8291;
-}
-
-const _0x78e2 = _0x29e92(1) + _0x29e92(2) + _0x29e92(3);
-console.log(_0x78e2);
-```
-
-The deobfuscator will then evaluate this function and attempt to replace any calls to it with the correct values:
-
-```javascript
-const a = 'Hello World';
-console.log(a);
-```
-
-A few important points about function evaluation:
-
--   BE CAREFUL when using function evaluation, this executes whatever functions you specify on your local machine so make sure those functions are not doing anything malicious.
--   This feature is still somewhat experimental, it's probably easier to use via the CLI as it's easier to find errors than the online version.
--   If the function is not a function declaration (i.e. a function expression or an arrow function expression) then the deobfuscator will not be able to detect the name of it automatically. To provide it use "#execute[name=FUNC_NAME]" directive.
--   You may need to modify the function to ensure it relies on no external variables (i.e. move a string array declaration inside the function) and handle any extra logic like string array rotation first.
--   You must first remove any anti tampering mechanisms before using function evaluation, otherwise it may cause an infinite loop.
 
 ## Config
 

@@ -9,7 +9,6 @@ import PropertySimplifier from './modifications/properties/propertySimplifier';
 import CleanupHelper from './helpers/cleanupHelper';
 import Config from './config';
 import VariableRenamer from './modifications/renaming/variableRenamer';
-import FunctionExecutor from './modifications/execution/functionExecutor';
 import DeadBranchRemover from './modifications/branches/deadBranchRemover';
 
 const defaultConfig: Config = {
@@ -42,9 +41,6 @@ const defaultConfig: Config = {
 export function deobfuscate(source: string, config: Config = defaultConfig): string {
     const ast = parseScript(source) as Shift.Script;
     const modifications: Modification[] = [];
-
-    // function execution should always be checked for
-    modifications.push(new FunctionExecutor(ast));
 
     if (config.proxyFunctions.replaceProxyFunctions) {
         modifications.push(new ProxyRemover(ast, config.proxyFunctions.removeProxyFunctions));
