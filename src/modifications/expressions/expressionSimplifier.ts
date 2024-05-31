@@ -5,6 +5,36 @@ import TraversalHelper from '../../helpers/traversalHelper';
 
 export default class ExpressionSimplifier extends Modification {
     private readonly types = new Set(['BinaryExpression', 'UnaryExpression']);
+    private static readonly RESOLVABLE_UNARY_OPERATORS: Set<string> = new Set([
+        '-',
+        '+',
+        '!',
+        '~',
+        'typeof',
+        'void'
+    ]);
+    private static readonly RESOLVABLE_BINARY_OPERATORS: Set<string> = new Set([
+        '==',
+        '!=',
+        '===',
+        '!==',
+        '<',
+        '<=',
+        '>',
+        '>=',
+        '<<',
+        '>>',
+        '>>>',
+        '+',
+        '-',
+        '*',
+        '/',
+        '%',
+        '**',
+        '|',
+        '^',
+        '&'
+    ]);
 
     /**
      * Creates a new modification.
@@ -47,10 +77,10 @@ export default class ExpressionSimplifier extends Modification {
     private simplifyExpression(expression: Shift.Expression): Shift.Expression {
         switch (expression.type) {
             case 'BinaryExpression':
-                return this.simplifyBinaryExpression(expression);
+                return this.simplifyBinaryExpression(expression) || expression;
 
             case 'UnaryExpression':
-                return this.simplifyUnaryExpression(expression);
+                return this.simplifyUnaryExpression(expression) || expression;
 
             default:
                 return expression;
@@ -58,129 +88,241 @@ export default class ExpressionSimplifier extends Modification {
     }
 
     /**
-     * Attempts to simplify a binary expression node.
-     * @param expression The binary expression node.
-     */
-    private simplifyBinaryExpression(expression: Shift.BinaryExpression): Shift.Expression {
-        const left = this.simplifyExpression(expression.left);
-        const right = this.simplifyExpression(expression.right);
-
-        const leftValue = this.getExpressionValueAsString(left);
-        const rightValue = this.getExpressionValueAsString(right);
-
-        if (leftValue != null && rightValue != null) {
-            const code = `${leftValue} ${expression.operator} ${rightValue}`;
-            const simplified = this.evalCodeToExpression(code);
-            return simplified != null ? simplified : expression;
-        } else {
-            return expression;
-        }
-    }
-
-    /**
      * Attempts to simplify a unary expression node.
      * @param expression The unary expression node.
      */
-    private simplifyUnaryExpression(expression: Shift.UnaryExpression): Shift.Expression {
-        expression.operand = this.simplifyExpression(expression.operand);
-        const code = this.getExpressionValueAsString(expression);
+    private simplifyUnaryExpression(expression: Shift.UnaryExpression): Shift.Expression | undefined {
+        if (!ExpressionSimplifier.RESOLVABLE_UNARY_OPERATORS.has(expression.operator)) {
+            return expression;
+        } else if (expression.operator == '-' && expression.operand.type == 'LiteralNumericExpression') {
+            return expression; // avoid trying to simplify negative numbers
+        }
 
-        if (code != null) {
-            const simplified = this.evalCodeToExpression(code);
-            return simplified != null ? simplified : expression;
+        const argument = this.simplifyExpression(expression.operand);
+
+        if (this.isResolvableExpression(argument)) {
+            const argumentValue = this.getResolvableExpressionValue(argument);
+            const value = this.applyUnaryOperation(
+                expression.operator as ResolvableUnaryOperator,
+                argumentValue
+            );
+            return this.convertValueToExpression(value);
         } else {
             return expression;
         }
     }
 
     /**
-     * Returns the value of a node as a string, null if not possible.
-     * @param expression The expression node.
+     * Attempts to simplify a binary expression node.
+     * @param expression The binary expression node.
      */
-    private getExpressionValueAsString(expression: Shift.Expression): string | null {
-        switch (expression.type) {
-            case 'LiteralStringExpression':
-                const value = expression.value
-                    .replace(/"/g, '\\"')
-                    .replace(/\n/g, '\\n')
-                    .replace(/\r/g, '\\r');
-                return `"${value}"`;
+    private simplifyBinaryExpression(expression: Shift.BinaryExpression): Shift.Expression | undefined {
+        if (
+            !expression.left.type.endsWith('Expression') ||
+            !ExpressionSimplifier.RESOLVABLE_BINARY_OPERATORS.has(expression.operator)
+        ) {
+            return undefined;
+        }
 
-            case 'LiteralNumericExpression':
-            case 'LiteralBooleanExpression':
-                return expression.value.toString();
+        const left = this.simplifyExpression(expression.left);
+        const right = this.simplifyExpression(expression.right);
 
-            case 'ArrayExpression':
-                if (expression.elements.length == 0) {
-                    return '[]';
-                } else if (expression.elements.every(e => !e || e.type.startsWith('Literal'))) {
-                    let content = '';
-                    for (let i = 0; i < expression.elements.length; i++) {
-                        if (expression.elements[i]) {
-                            content += `${this.getExpressionValueAsString(
-                                expression.elements[i] as Shift.Expression
-                            )},`;
-                        } else {
-                            content += ',';
-                        }
-                    }
-                    return `[${content.substring(0, content.length - 1)}]`;
-                } else {
-                    return null;
-                }
-
-            case 'ObjectExpression':
-                if (expression.properties.length == 0) {
-                    expression.properties;
-                    return '[]';
-                } else {
-                    return null;
-                }
-
-            case 'UnaryExpression':
-                const operand = this.getExpressionValueAsString(expression.operand);
-                return operand != null ? `${expression.operator} ${operand}` : null;
-
-            default:
-                return null;
+        if (this.isResolvableExpression(left) && this.isResolvableExpression(right)) {
+            const leftValue = this.getResolvableExpressionValue(left);
+            const rightValue = this.getResolvableExpressionValue(right);
+            const value = this.applyBinaryOperation(
+                expression.operator as ResolvableBinaryOperator,
+                leftValue,
+                rightValue
+            );
+            return this.convertValueToExpression(value);
+        } else if (expression.operator == '-' && right.type == 'UnaryExpression' && right.operator == '-' && right.operand.type == 'LiteralNumericExpression') {
+            // convert (- -a) to +a (as long as a is a number)
+            expression.right = right.operand;
+            expression.operator = '+';
+            return expression;
+        } else {
+            return undefined;
         }
     }
 
     /**
-     * Evaluates a given piece of code and converts the result to an
-     * expression node if possible.
-     * @param code The code to be evaluated.
+     * Applies a unary operation.
+     * @param operator The operator.
+     * @param argument The argument value.
+     * @returns The resultant value.
      */
-    private evalCodeToExpression(code: string): Shift.Expression | null {
-        let value;
-        try {
-            value = eval(code);
-        } catch (err) {
-            return null;
+    private applyUnaryOperation(operator: ResolvableUnaryOperator, argument: any): any {
+        switch (operator) {
+            case '-':
+                return -argument;
+            case '+':
+                return +argument;
+            case '!':
+                return !argument;
+            case '~':
+                return ~argument;
+            case 'typeof':
+                return typeof argument;
+            case 'void':
+                return void argument;
         }
+    }
 
+    /**
+     * Applies a binary operation.
+     * @param operator The resolvable binary operator.
+     * @param left The value of the left expression.
+     * @param right The value of the right expression.
+     * @returns The resultant value.
+     */
+    private applyBinaryOperation(operator: ResolvableBinaryOperator, left: any, right: any): any {
+        switch (operator) {
+            case '==':
+                return left == right;
+            case '!=':
+                return left != right;
+            case '===':
+                return left === right;
+            case '!==':
+                return left !== right;
+            case '<':
+                return left < right;
+            case '<=':
+                return left <= right;
+            case '>':
+                return left > right;
+            case '>=':
+                return left >= right;
+            case '<<':
+                return left << right;
+            case '>>':
+                return left >> right;
+            case '>>>':
+                return left >>> right;
+            case '+':
+                return left + right;
+            case '-':
+                return left - right;
+            case '*':
+                return left * right;
+            case '/':
+                return left / right;
+            case '%':
+                return left % right;
+            case '**':
+                return left ** right;
+            case '|':
+                return left | right;
+            case '^':
+                return left ^ right;
+            case '&':
+                return left & right;
+        }
+    }
+
+    /**
+     * Gets the real value from a resolvable expression.
+     * @param expression The resolvable expression.
+     * @returns The value.
+     */
+    private getResolvableExpressionValue(expression: ResolvableExpression): any {
+        switch (expression.type) {
+            case 'LiteralNumericExpression':
+            case 'LiteralStringExpression':
+            case 'LiteralBooleanExpression':
+                return expression.value;
+            case 'UnaryExpression':
+                return -this.getResolvableExpressionValue(
+                    expression.operand as Literal
+                );
+            case 'LiteralNullExpression':
+                return null;
+            case 'IdentifierExpression':
+                return undefined;
+            case 'ArrayExpression':
+                return [];
+            case 'ObjectExpression':
+                return {};
+        }
+    }
+
+    /**
+     * Attempts to convert a value of unknown type to an expression node.
+     * @param value The value.
+     * @returns The expression or undefined.
+     */
+    private convertValueToExpression(value: any): Shift.Expression | undefined {
         switch (typeof value) {
             case 'string':
-                return new Shift.LiteralStringExpression({
-                    value: value
-                });
-
+                return new Shift.LiteralStringExpression({ value });
             case 'number':
-                return new Shift.LiteralNumericExpression({
-                    value: value
-                });
-
+                return value >= 0
+                    ? new Shift.LiteralNumericExpression({ value })
+                    : new Shift.UnaryExpression({ operator: '-', operand: new Shift.LiteralNumericExpression({ value: Math.abs(value) })});
             case 'boolean':
-                return new Shift.LiteralBooleanExpression({
-                    value: value
-                });
-
+                return new Shift.LiteralBooleanExpression({ value });
+            case 'undefined':
+                return new Shift.IdentifierExpression({ name: 'undefined' });
             default:
-                return null;
+                return undefined;
         }
     }
 
-    private isSimpleArray(array: Shift.ArrayExpression): boolean {
-        return array.elements.every(e => !e || e.type.startsWith('Literal'));
+    /**
+     * Returns whether a node is a resolvable expression that can be
+     * evaluated safely.
+     * @param node The AST node.
+     * @returns Whether.
+     */
+    private isResolvableExpression(node: Shift.Node): node is ResolvableExpression {
+        return (
+            this.isLiteral(node) ||
+            (node.type == 'UnaryExpression' && node.operator == '-' && node.operand.type == 'LiteralNumericExpression') ||
+            (node.type == 'IdentifierExpression' && node.name == 'undefined') ||
+            (node.type == 'ArrayExpression' && node.elements.length == 0) ||
+            (node.type == 'ObjectExpression' && node.properties.length == 0)
+        );
+    }
+
+    /**
+     * Returns whether a node is a literal.
+     * @param node The AST node.
+     * @returns Whether.
+     */
+    private isLiteral(node: Shift.Node): node is Literal {
+        return node.type == 'LiteralNumericExpression' || node.type == 'LiteralStringExpression' || node.type == 'LiteralBooleanExpression' || node.type == 'LiteralNullExpression';
     }
 }
+
+type Literal = Shift.LiteralNumericExpression | Shift.LiteralStringExpression | Shift.LiteralBooleanExpression | Shift.LiteralNullExpression;
+type ResolvableExpression =
+    | Literal
+    | (Shift.UnaryExpression & { operator: '-'; argument: Literal })
+    | (Shift.IdentifierExpression & { name: 'undefined' })
+    | (Shift.ArrayExpression & { elements: [] })
+    | (Shift.ObjectExpression & { properties: [] });
+
+type ResolvableUnaryOperator = '-' | '+' | '!' | '~' | 'typeof' | 'void';
+
+type ResolvableBinaryOperator =
+    | '=='
+    | '!='
+    | '==='
+    | '!=='
+    | '<'
+    | '<='
+    | '>'
+    | '>='
+    | '<<'
+    | '>>'
+    | '>>>'
+    | '+'
+    | '-'
+    | '*'
+    | '/'
+    | '%'
+    | '**'
+    | '|'
+    | '^'
+    | '&';
