@@ -1,5 +1,5 @@
 import * as Shift from 'shift-ast';
-import parseScript from 'shift-parser';
+import { parseScript } from 'shift-parser';
 import { codeGen } from 'shift-codegen';
 import { traverse } from '../../helpers/traverse';
 import TraversalHelper from '../../helpers/traversalHelper';

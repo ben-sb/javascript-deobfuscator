@@ -1,4 +1,4 @@
-import parseScript from 'shift-parser';
+import { parseScript } from 'shift-parser';
 import * as Shift from 'shift-ast';
 import { codeGen, FormattedCodeGen } from 'shift-codegen';
 import Modification from './modification';
