@@ -2,13 +2,13 @@ import Modification from '../../modification';
 import * as Shift from 'shift-ast';
 import { traverse } from '../../helpers/traverse';
 import Array from './array';
-import Scope from './scope';
 import TraversalHelper from '../../helpers/traversalHelper';
+import Scope, { ScopeType } from '../../scope/scope';
 
 export default class ArrayUnpacker extends Modification {
     private readonly scopeTypes = new Set(['Block', 'FunctionBody']);
     private readonly shouldRemoveArrays: boolean;
-    private readonly globalScope: Scope;
+    private readonly globalScope: Scope<Array>;
     private readonly arrayNodes: Set<Shift.Node>;
 
     /**
@@ -19,7 +19,7 @@ export default class ArrayUnpacker extends Modification {
     constructor(ast: Shift.Script, removeArrays: boolean) {
         super('Unpack Arrays', ast);
         this.shouldRemoveArrays = removeArrays;
-        this.globalScope = new Scope(this.ast);
+        this.globalScope = new Scope(this.ast, ScopeType.Other);
         this.arrayNodes = new Set<Shift.Node>();
     }
 
@@ -48,13 +48,13 @@ export default class ArrayUnpacker extends Modification {
         traverse(this.ast, {
             enter(node: Shift.Node, parent: Shift.Node) {
                 if (self.scopeTypes.has(node.type)) {
-                    scope = new Scope(node, scope);
+                    scope = new Scope(node, ScopeType.Other, scope);
                 } else if (self.isLiteralArrayDeclaration(node) && !self.arrayNodes.has(node)) {
                     const name = (node as any).binding.name;
                     const elements = (node as any).init.elements;
 
                     const array = new Array(node, parent, name, elements);
-                    scope.addArray(array);
+                    scope.add(name, array);
 
                     self.arrayNodes.add(node);
                     foundArrays = true;
@@ -80,10 +80,10 @@ export default class ArrayUnpacker extends Modification {
         traverse(this.ast, {
             enter(node: Shift.Node, parent: Shift.Node) {
                 if (self.scopeTypes.has(node.type)) {
-                    scope = scope.children.get(node) as Scope;
+                    scope = scope.children.get(node) as Scope<Array>;
                 } else if (self.isSimpleArrayAccess(node)) {
                     const name = (node as any).object.name;
-                    const array = scope.findArray(name);
+                    const array = scope.get(name);
 
                     if (array) {
                         const index = (node as any).expression.value;
@@ -108,8 +108,8 @@ export default class ArrayUnpacker extends Modification {
      * Removes all the (suitable) arrays in a scope and its children.
      * @param scope The scope to remove arrays from.
      */
-    private removeArrays(scope: Scope): void {
-        for (const [_, array] of scope.arrays) {
+    private removeArrays(scope: Scope<Array>): void {
+        for (const [_, array] of scope.elements) {
             if (array.replaceCount > 0) {
                 TraversalHelper.removeNode(array.parentNode, array.node);
             }

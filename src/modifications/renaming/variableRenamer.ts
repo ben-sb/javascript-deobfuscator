@@ -1,13 +1,13 @@
 import Modification from '../../modification';
 import * as Shift from 'shift-ast';
-import { Scope, ScopeType } from './scope';
 import { traverse } from '../../helpers/traverse';
 import { blockScopedTypes, Variable } from './variable';
 import names from './names.json';
 import NameMapping from './nameMapping';
+import Scope, { ScopeType } from '../../scope/scope';
 
 export default class VariableRenamer extends Modification {
-    private globalScope: Scope;
+    private globalScope: Scope<Variable>;
     private variableNames: string[];
     private usedVariableNames: Set<string>;
     private nameMapping: NameMapping;
@@ -48,7 +48,7 @@ export default class VariableRenamer extends Modification {
                     case 'FunctionDeclaration': {
                         const variable = new Variable(node.name.name, 'var');
                         variable.declarations.push(node.name);
-                        scope.addVariable(variable);
+                        scope.add(variable.name, variable);
                         self.addName(node.name.name);
                     }
                     case 'FunctionExpression':
@@ -59,7 +59,7 @@ export default class VariableRenamer extends Modification {
                         if (node.type == 'FunctionExpression' && node.name) {
                             const variable = new Variable(node.name.name, 'var');
                             variable.declarations.push(node.name);
-                            scope.addVariable(variable);
+                            scope.add(variable.name, variable);
                             self.addName(node.name.name);
                         }
 
@@ -68,7 +68,7 @@ export default class VariableRenamer extends Modification {
                             if (param.type == 'BindingIdentifier') {
                                 const variable = new Variable(param.name, 'var');
                                 variable.declarations.push(param);
-                                scope.addVariable(variable);
+                                scope.add(variable.name, variable);
                                 self.addName(param.name);
                             }
                         }
@@ -76,7 +76,7 @@ export default class VariableRenamer extends Modification {
                         // add 'arguments' to scope
                         if (node.type != 'ArrowExpression') {
                             const variable = new Variable('arguments', 'var');
-                            scope.addVariable(variable);
+                            scope.add(variable.name, variable);
                         }
                         break;
                     }
@@ -85,7 +85,7 @@ export default class VariableRenamer extends Modification {
                         if (node.binding && node.binding.type == 'BindingIdentifier') {
                             const variable = new Variable(node.binding.name, 'var');
                             variable.declarations.push(node.binding);
-                            scope.addVariable(variable);
+                            scope.add(variable.name, variable);
                             self.addName(node.binding.name);
                         }
                     }
@@ -107,8 +107,8 @@ export default class VariableRenamer extends Modification {
                             let variable: Variable;
                             const declarationScope = scope.getDeclarationScope(node.kind);
 
-                            if (declarationScope.variables.has(declarator.binding.name)) {
-                                variable = declarationScope.variables.get(
+                            if (declarationScope.elements.has(declarator.binding.name)) {
+                                variable = declarationScope.elements.get(
                                     declarator.binding.name
                                 ) as Variable;
                                 if (variable.isBlockScoped() || blockScopedTypes.has(node.kind)) {
@@ -118,7 +118,7 @@ export default class VariableRenamer extends Modification {
                                 }
                             } else {
                                 variable = new Variable(declarator.binding.name, node.kind);
-                                scope.addVariable(variable);
+                                scope.add(variable.name, variable);
                                 self.addName(declarator.binding.name);
                             }
 
@@ -155,7 +155,7 @@ export default class VariableRenamer extends Modification {
                     case 'ForOfStatement':
                     case 'ForAwaitStatement':
                     case 'BlockStatement': {
-                        const newScope = scope.children.find(s => s.node == node);
+                        const newScope = scope.children.get(node);
                         if (!newScope) {
                             throw new Error(`Failed to find scope of type ${node.type}`);
                         }
@@ -165,7 +165,7 @@ export default class VariableRenamer extends Modification {
 
                     case 'IdentifierExpression':
                     case 'AssignmentTargetIdentifier': {
-                        let variable = scope.lookupVariable(node.name);
+                        let variable = scope.get(node.name);
 
                         // handle global variables
                         if (!variable) {
@@ -191,11 +191,14 @@ export default class VariableRenamer extends Modification {
      * children.
      * @param scope The scope.
      */
-    private renameVariables(scope: Scope, parentMapping: NameMapping = this.nameMapping): void {
+    private renameVariables(
+        scope: Scope<Variable>,
+        parentMapping: NameMapping = this.nameMapping
+    ): void {
         const nameMapping = new NameMapping();
         parentMapping.addChild(nameMapping);
 
-        for (const [name, variable] of scope.variables) {
+        for (const [name, variable] of scope.elements) {
             if (this.shouldRename(name)) {
                 const newName = this.getVariableName();
                 variable.rename(newName);
@@ -203,7 +206,7 @@ export default class VariableRenamer extends Modification {
             }
         }
 
-        for (const childScope of scope.children) {
+        for (const childScope of scope.children.values()) {
             this.renameVariables(childScope, nameMapping);
         }
     }
