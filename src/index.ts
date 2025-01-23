@@ -10,6 +10,7 @@ import CleanupHelper from './helpers/cleanupHelper';
 import Config from './config';
 import VariableRenamer from './modifications/renaming/variableRenamer';
 import DeadBranchRemover from './modifications/branches/deadBranchRemover';
+import StringReverser from './modifications/expressions/stringReverser';
 
 const defaultConfig: Config = {
     verbose: false,
@@ -23,7 +24,8 @@ const defaultConfig: Config = {
     },
     expressions: {
         simplifyExpressions: true,
-        removeDeadBranches: true
+        removeDeadBranches: true,
+        recoverReversedStrings: true
     },
     miscellaneous: {
         beautify: true,
@@ -65,6 +67,10 @@ export function deobfuscate(source: string, config: Config = defaultConfig): str
 
     if (config.miscellaneous.simplifyProperties) {
         modifications.push(new PropertySimplifier(ast));
+    }
+
+    if (config.expressions.recoverReversedStrings) {
+        modifications.push(new StringReverser(ast));
     }
 
     if (config.miscellaneous.renameHexIdentifiers) {
