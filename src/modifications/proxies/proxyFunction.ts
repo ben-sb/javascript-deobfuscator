@@ -3,14 +3,14 @@ import { parseScript } from 'shift-parser';
 import { codeGen } from 'shift-codegen';
 import { traverse } from '../../helpers/traverse';
 import TraversalHelper from '../../helpers/traversalHelper';
-import Scope from './scope';
 import { v4 as uuid } from 'uuid';
+import Scope from '../../scope/scope';
 
 export default class ProxyFunction {
     id: string;
     node: Shift.Node;
     parentNode: Shift.Node;
-    scope: Scope;
+    scope: Scope<ProxyFunction>;
     name: string;
     params: Shift.BindingIdentifier[];
     expression: Shift.Expression;
@@ -27,7 +27,7 @@ export default class ProxyFunction {
     constructor(
         node: Shift.Node,
         parentNode: Shift.Node,
-        scope: Scope,
+        scope: Scope<ProxyFunction>,
         name: string,
         params: Shift.BindingIdentifier[],
         expression: Shift.Expression
