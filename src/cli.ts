@@ -19,7 +19,8 @@ if (!fs.existsSync(options.input)) {
 }
 
 const source = fs.readFileSync(options.input).toString();
-const output = deobfuscate(source, { isModule: options.module });
+const config = options.isModule ? { isModule: true } : {};
+const output = deobfuscate(source, config);
 
 fs.writeFileSync(options.output, output);
 console.info(`The output file ${options.output} has been created`);

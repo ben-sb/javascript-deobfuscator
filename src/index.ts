@@ -44,13 +44,7 @@ const defaultConfig: Config = {
 export function deobfuscate(source: string, parsedConfig?: Partial<Config>): string {
     const config = Object.assign({}, defaultConfig, parsedConfig);
 
-    const ast = (() => {
-        if (config.isModule) {
-            return parseModule(source);
-        } else {
-            return parseScript(source);
-        }
-    })() as Shift.Script;
+    const ast = (config.isModule ? parseModule(source) : parseScript(source)) as Shift.Script;
 
     const modifications: Modification[] = [];
 
