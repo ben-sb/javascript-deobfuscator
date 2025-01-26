@@ -1,4 +1,4 @@
-import { parseScript } from 'shift-parser';
+import { parseModule, parseScript } from 'shift-parser';
 import * as Shift from 'shift-ast';
 import { codeGen, FormattedCodeGen } from 'shift-codegen';
 import Modification from './modification';
@@ -14,6 +14,7 @@ import StringDecoder from './modifications/expressions/stringDecoder';
 
 const defaultConfig: Config = {
     verbose: false,
+    isModule: false,
     arrays: {
         unpackArrays: true,
         removeArrays: true
@@ -40,8 +41,11 @@ const defaultConfig: Config = {
  * @param config The deobfuscation configuration (optional).
  * @returns The deobfuscated script.
  */
-export function deobfuscate(source: string, config: Config = defaultConfig): string {
-    const ast = parseScript(source) as Shift.Script;
+export function deobfuscate(source: string, parsedConfig?: Partial<Config>): string {
+    const config = Object.assign({}, defaultConfig, parsedConfig);
+
+    const ast = (config.isModule ? parseModule(source) : parseScript(source)) as Shift.Script;
+
     const modifications: Modification[] = [];
 
     if (config.proxyFunctions.replaceProxyFunctions) {
