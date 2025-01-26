@@ -42,7 +42,7 @@ const defaultConfig: Config = {
  * @returns The deobfuscated script.
  */
 export function deobfuscate(source: string, parsedConfig?: Partial<Config>): string {
-    const config = Object.assign(defaultConfig, parsedConfig);
+    const config = Object.assign({}, defaultConfig, parsedConfig);
 
     const ast = (() => {
         if (config.isModule) {
