@@ -192,6 +192,8 @@ console.log(message + ' ' + result);
 
 ```typescript
 interface Config {
+    verbose: boolean;
+    isModule: boolean;
     arrays: {
         unpackArrays: boolean;
         removeArrays: boolean;
@@ -218,7 +220,7 @@ Either install the module locally via `npm install js-deobfuscator` and import a
 
 ```shell
 > js-deobfuscator -h
-Usage: run [options]
+Usage: js-deobfuscator [options]
 
 Deobfuscate a javascript file
 
@@ -226,10 +228,7 @@ Options:
   -i, --input [input_file]    The input file to deobfuscate (default: "input/source.js")
   -o, --output [output_file]  The deobfuscated output file (default: "output/output.js")
   -m, --module                Parse an ESModule
-  -f, --force                 Whether to overwrite the output file or not
   -h, --help                  display help for command
-
->
 ```
 
 Alternatively use the online version at [deobfuscate.io](https://deobfuscate.io)

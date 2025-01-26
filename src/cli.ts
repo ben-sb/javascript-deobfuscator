@@ -7,7 +7,7 @@ program
   .description('Deobfuscate a javascript file')
   .option('-i, --input [input_file]', 'The input file to deobfuscate', 'input/source.js')
   .option('-o, --output [output_file]', 'The deobfuscated output file', 'output/output.js')
-  .option('-m, --module', 'Parse ESModule');
+  .option('-m, --module', 'Parse an ESModule');
 
 program.parse(process.argv);
 const options = program.opts();
