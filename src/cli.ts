@@ -19,7 +19,7 @@ if (!fs.existsSync(options.input)) {
 }
 
 const source = fs.readFileSync(options.input).toString();
-const config = options.isModule ? { isModule: true } : {};
+const config = options.module ? { isModule: true } : {};
 const output = deobfuscate(source, config);
 
 fs.writeFileSync(options.output, output);
