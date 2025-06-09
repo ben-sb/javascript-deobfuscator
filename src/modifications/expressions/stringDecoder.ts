@@ -30,7 +30,7 @@ export default class StringDecoder extends Modification {
      * Creates a new modification.
      * @param ast The AST.
      */
-    constructor(ast: Shift.Script) {
+    constructor(ast: Shift.Script | Shift.Module) {
         super('Undo string operations', ast);
     }
 
@@ -50,7 +50,8 @@ export default class StringDecoder extends Modification {
 
         // only look at top level
         // TODO: once scope system has been improved, rework this
-        for (const statement of this.ast.statements) {
+        const statements = this.ast.type === 'Script' ? this.ast.statements : this.ast.items;
+        for (const statement of statements) {
             if (self.isXorStringEncodingFunction(statement)) {
                 const name = statement.name.name;
                 const key = statement.body.statements[0].expression.expression.value;

@@ -16,7 +16,7 @@ export default class VariableRenamer extends Modification {
      * Creates a new modification.
      * @param ast The AST.
      */
-    constructor(ast: Shift.Script) {
+    constructor(ast: Shift.Script | Shift.Module) {
         super('Rename Variables', ast);
         this.globalScope = new Scope(this.ast, ScopeType.Global);
         this.variableNames = [];
