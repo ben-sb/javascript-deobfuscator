@@ -7,7 +7,7 @@ export default class CleanupHelper {
      * Cleans up any useless code.
      * @param ast The AST.
      */
-    static cleanup(ast: Shift.Script): void {
+    static cleanup(ast: Shift.Script | Shift.Module): void {
         const self = this;
 
         traverse(ast, {

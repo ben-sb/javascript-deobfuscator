@@ -29,7 +29,7 @@ export default class ProxyRemover extends Modification {
      * @param ast The AST.
      * @param removeProxyFunctions Whether the functions should be removed.
      */
-    constructor(ast: Shift.Script, removeProxyFunctions: boolean) {
+    constructor(ast: Shift.Script | Shift.Module, removeProxyFunctions: boolean) {
         super('Remove Proxy Functions', ast);
         this.shouldRemoveProxyFunctions = removeProxyFunctions;
         this.globalScope = new Scope(this.ast, ScopeType.Other);

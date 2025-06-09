@@ -16,7 +16,7 @@ export default class ArrayUnpacker extends Modification {
      * @param ast The AST.
      * @param shouldRemoveArrays Whether the arrays should be removed.
      */
-    constructor(ast: Shift.Script, removeArrays: boolean) {
+    constructor(ast: Shift.Script | Shift.Module, removeArrays: boolean) {
         super('Unpack Arrays', ast);
         this.shouldRemoveArrays = removeArrays;
         this.globalScope = new Scope(this.ast, ScopeType.Other);

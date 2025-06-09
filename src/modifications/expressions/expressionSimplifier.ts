@@ -40,7 +40,7 @@ export default class ExpressionSimplifier extends Modification {
      * Creates a new modification.
      * @param ast The AST.
      */
-    constructor(ast: Shift.Script) {
+    constructor(ast: Shift.Script | Shift.Module) {
         super('Simplify Expressions', ast);
     }
 
