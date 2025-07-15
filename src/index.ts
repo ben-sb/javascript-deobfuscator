@@ -1,6 +1,6 @@
 import { parseModule, parseScript } from 'shift-parser';
 import * as Shift from 'shift-ast';
-import { codeGen, FormattedCodeGen } from 'shift-codegen';
+import { codeGen, FormattedCodeGen } from 'ben-sb-shift-codegen';
 import Modification from './modification';
 import ProxyRemover from './modifications/proxies/proxyRemover';
 import ExpressionSimplifier from './modifications/expressions/expressionSimplifier';

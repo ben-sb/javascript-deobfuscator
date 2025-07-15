@@ -13,10 +13,10 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "ben-sb-shift-codegen": "^8.0.0",
         "commander": "^9.4.0",
         "estraverse": "^4.2.0",
         "shift-ast": "^6.1.0",
-        "shift-codegen": "github:ben-sb/shift-codegen-js",
         "shift-parser": "^8.0.0",
         "shift-validator": "^5.0.1",
         "uuid": "^8.3.2"
