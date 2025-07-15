@@ -1,6 +1,6 @@
 import * as Shift from 'shift-ast';
 import { parseScript } from 'shift-parser';
-import { codeGen } from 'shift-codegen';
+import { codeGen } from 'ben-sb-shift-codegen';
 import { traverse } from '../../helpers/traverse';
 import TraversalHelper from '../../helpers/traversalHelper';
 import { v4 as uuid } from 'uuid';
